@@ -85,13 +85,15 @@ def W(chi, a, xcmb): # call a meshgrid of chi and a
 # Matter Power Spectrum    
 def P_delta(z, k, from_func='Weyl'):
     ''' 
-    from_func can take 'Weyl' and 'psi'
+    from_func can take 'Weyl', 'psi', 'Weyl linear'
     Defaults to from_func = 'Weyl'
     '''
     if from_func == 'Weyl':
         return 4 / (9 * Omm(z)**2 * H(z)**4) * PK_weyl.P(z, k, grid=False)
     elif from_func == 'psi':
         return 4 / (9 * Omm(z)**2 * H(z)**4 * k**3) * PK_weyl.P(z, k, grid=False)
+    if from_func == 'Weyl linear':
+        return 4 / (9 * Omm(z)**2 * H(z)**4) * PK_weyl_linear.P(z, k, grid=False)
     else:
         print('Invalid argument for from_func')
    
@@ -102,6 +104,7 @@ def P_delta(z, k, from_func='Weyl'):
 print('Getting matter power interpolators')
 #PK_tot_k = camb.get_matter_power_interpolator(pars, nonlinear=True, hubble_units=False, k_hunit=False, kmax=maxkh, var1=model.Transfer_tot, var2=model.Transfer_tot, zmax=zcmb)
 PK_weyl  = camb.get_matter_power_interpolator(pars, nonlinear=True, hubble_units=False, k_hunit=False, kmax=maxkh, var1=model.Transfer_Weyl, var2=model.Transfer_Weyl, zmax=zcmb)
+#PK_weyl_linear  = camb.get_matter_power_interpolator(pars, nonlinear=False, hubble_units=False, k_hunit=False, kmax=maxkh, var1=model.Transfer_Weyl, var2=model.Transfer_Weyl, zmax=zcmb)
 
 '''
 ######################################################################################################### 
@@ -194,7 +197,7 @@ cl_kappa_dweyl = np.loadtxt('{0}cl_values/cl_kappa_dweyl.txt'.format(savefolder)
 #                                                   PLOTS                                               #
 #########################################################################################################
 print('Plotting')
-
+'''
 cl_camb = cl_camb[:,0][1:]
 
 # Plot my Cl and camb's Cl for nonlinear growth
@@ -230,7 +233,7 @@ plt.grid(True)
 plt.ylim(-0.4)
 plt.legend(loc='center right', bbox_to_anchor=(0.5, 0.4), fancybox=True)
 plt.savefig('{0}cl_plots/cl_perdiff.pdf'.format(savefolder))
-
+'''
 # ------------------------------------------------------------------------------------------------------- #
 # ------------------------------------------------------------------------------------------------------- #
 #                                             BARYONIC STUFF                                              #
@@ -313,7 +316,7 @@ for j, datakey in enumerate(data_key):
         d[:] = 1
         d[k<kmin] = 0
         d[k>=kmax] = 0
-        cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * (bary_P_int(k, zb)[:,0]/base_P_int(k, zb)[:,0]) * wb**2 / Xb**2)
+        cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal((bary_P_int(k, zb)/base_P_int(k, zb))) * wb**2 / Xb**2)
         # The [:,0] is sort of sketchy 
     cl_baryon_list.append(cl_kappa_bary)
 
@@ -361,12 +364,13 @@ for i, key in enumerate(data_key):
             Pk = np.delete(Pk, j, axis=0)
     data_same[key]['P'] = Pk
     
+    data_same[key]['P_interpolator'] = interpolate.interp2d(k_same, z_same, Pk, kind='cubic')
     
 # Add interpolated ratios of each simulation wrt base_data
 base_same_P = data_same[data_key[base_index]]['P'] 
 for i, key in enumerate(data_key):
     bary_same_P = data_same[key]['P'] 
-    data_same[key]['P_ratio_interpolator'] = interpolate.interp2d(k_same, z_same, bary_same_P/base_same_P, kind='cubic')
+    data_same[key]['P_ratio_interpolator'] = interpolate.interp2d(k_same, z_same, bary_same_P/base_same_P, kind='cubic', fill_value=1.)
     
     
     
@@ -412,6 +416,8 @@ for j, datakey in enumerate(data_key):
 end2 = time.time()
 print('Baryonic Cl 2 took: ', end2 - start2)        
 
+colors = np.array(['r', 'darkorange', 'yellow', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta','brown'])
+
 
 
 '''
@@ -419,7 +425,6 @@ print('Baryonic Cl 2 took: ', end2 - start2)
 #                                            BARYONIC PLOTS                                             #
 #########################################################################################################
 print('Plotting BARYONIC')
-colors = np.array(['r', 'darkorange', 'yellow', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta','brown'])
 
 # Plot my Cl and camb's Cl for nonlinear growth
 plt.figure(6, figsize=(10,6))
@@ -462,26 +467,66 @@ plt.title(r'Difference $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}
 plt.ylabel(r'($C_\ell^{\kappa\kappa, bary}$ - $C_\ell^{\kappa\kappa, DMONLY}$)/$C_\ell^{\kappa\kappa, DMONLY}$')
 plt.xlabel(r'Multipole $\ell$')
 plt.grid(True)
-#plt.ylim(-0.4)
-plt.legend(ncol=2, loc='lower right', prop={'size': 8})
+plt.legend(ncol=2, loc='upper left', prop={'size': 8})
 plt.savefig('{0}cl_plots/cl_diff.pdf'.format(savefolder))
+
+
+
+
+plt.figure(7, figsize=(10,6))
+plt.clf()
+
+plt.semilogx(lb, cl_baryon_list[4]-cl_baryon_list[base_index], color='k', label='4 no ratio - base no ratio')    
+plt.semilogx(lb, cl_baryon_list2[4]-cl_baryon_list2[base_index], color='r', label='4 ratio -  base ratio', ls='--')  
+
+plt.title(r'Difference $C_\ell^{\kappa\kappa}$')
+plt.ylabel(r'Cl')
+plt.xlabel(r'Multipole $\ell$')
+plt.grid(True)
+plt.legend()
+plt.savefig('{0}cl_plots/cl_stuff.pdf'.format(savefolder))
+
+
+
+
+
+# Calculate the INTEGRAND
+bary_P_int4 = data[data_key[4]]['P_interpolator']
+base_P_int4 = basedata['P_interpolator']
+P_ratio_int4 = data_same[data_key[4]]['P_ratio_interpolator']
+i4 = []
+i_ratio4 = []
+
+for i, li in enumerate(lb):
+    k = (li+0.5) / Xb
+    d[:] = 1
+    d[k<kmin] = 0
+    d[k>=kmax] = 0
+    integ4  = d * P_delta(zb, k, from_func='Weyl') * (bary_P_int4(k, zb)[:,0]/base_P_int4(k, zb)[:,0]) * wb**2 / Xb**2
+    integ_ratio4  = d * P_delta(zb, k, from_func='Weyl') * P_ratio_int4(k, zb)[:,0] * wb**2 / Xb**2
+    i4.append(integ4)
+    i_ratio4.append(integ_ratio4)
+
 
 
 # ---------------------------------------------------------------------------------------------------------
 # Plot P(k)'s
 z0 = 0 
 k0 = np.linspace(kmin, kmax, 100000, endpoint=True)
+k1 = np.logspace(-4, np.log10(kmax), 10000, endpoint=True)
 #k0**3/(2*np.pi) * 
 
 plt.figure(8, figsize=(10,6))
 plt.clf()
-plt.loglog(k0, P_delta(z0, k0, from_func='Weyl')*h**3, label=r'$P_{\delta}(Weyl)^{CAMB}$', color='k')
+plt.loglog(k1, P_delta(z0, k1, from_func='Weyl')*h**3, label=r'$P_{\delta}(Weyl)^{CAMB}$ Nonlinear', color='k')
+#plt.loglog(k1, P_delta(z0, k1, from_func='Weyl linear')*h**3, label=r'$P_{\delta}(Weyl)^{CAMB}$ Linear', color='k')
 
 for i, datakey in enumerate(data_key):
-    plt.loglog(k0, data[datakey]['P_interpolator'](k0, z0), color=colors[i], label=datakey)#+r' $/h^3$')
+    plt.loglog(k0, data[datakey]['P_interpolator'](k0, z0), color=colors[i], label=datakey)
+    #plt.loglog(k0, data_same[datakey]['P_interpolator'](k0, z0), color=colors[i], label='{0} ratio'.format(datakey), ls='--')
 
-plt.title('Power Spectra for $z$ = {0}'.format(str(z0)))
-plt.ylabel(r'$P(k)$ [$Mpc^3/h^3$]')
+plt.title('Matter Power Spectra for $z$ = {0}'.format(str(z0)))
+plt.ylabel(r'$P_m(k)$ [$Mpc^3/h^3$]')
 plt.xlabel(r'$k$ [$h/Mpc$]')
 plt.grid(True)
 plt.legend()
@@ -498,11 +543,9 @@ basez0 = data[data_key[base_index]]['P_interpolator'](k0, z0)
 
 plt.semilogx(k0, np.log10(P_delta(z0, k0, from_func='Weyl')/basez0 *h**3), label=r'$P_{\delta}(Weyl)$ * $h^3$', color='k')
 
-for i, datakey in enumerate(data_key):
+for i, datakey in enumerate(data_key[:-4]):
     plt.semilogx(k0, np.log10(data[datakey]['P_interpolator'](k0, z0)/basez0), color=colors[i], label='{0}'.format(datakey))
     plt.semilogx(k0, np.log10(data_same[datakey]['P_ratio_interpolator'](k0, z0)), color=colors[i], label='{0} - 2'.format(datakey), ls='--')
-    
-    
 
 plt.title('Power Spectra for $z$ = {0}'.format(str(z0)))
 plt.ylabel(r'$log_{10}(P/P_{DMONLY})$')
