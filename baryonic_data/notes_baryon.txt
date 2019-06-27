@@ -1,0 +1,14 @@
+BARYONIC ANALYSIS
+(June 24, 2019)
+
+1) P_theoretical = P_delta('weyl') from CAMB
+2) P_DM          = "DMONLY_L100N512.txt"
+3) P_bary        = anything other than "WMAP7" ones 
+
+% z        k [h/Mpc]   P(k) [(Mpc/h)^3]    Delta^2(k)   
+
+
+
+1) Why is the power at l ~ 500 is 10x too low? Plot P(k) at few z's & compare with Fig 1 of van Daalen et al
+2) Match units!! CAMB's Power is in [Mpc]^3 while sim data is in [Mpc/h]^3
+3) Interpolate the ratios, not individual power spectra!
