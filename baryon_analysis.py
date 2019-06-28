@@ -425,10 +425,9 @@ k_same
 z = 0
 
 i = 0
-ells = np.array([990,2000,4990])
+ells = np.array([100])
 ell = ells[i]
 k = (ell + 0.5)/Xb
-zb
 
 basep_o = data[data_key[base_index]]['P'][0]
 basep_io = np.diagonal(data[data_key[base_index]]['P_interpolator'](k, zb))
@@ -441,42 +440,20 @@ p4_ior = p4_io/basep_io
 p4_isr = p4_is/basep_is
 pr4_is = np.diagonal(data_same[data_key[4]]['P_ratio_interpolator'](k, zb))
 
-print(k)
 plt.figure(1, figsize=(10,6))
 plt.clf()
 
-j = 0
-for i, li in enumerate(ells):
-    ell = li
-    k = (ell + 0.5)/Xb
-    basep_o = data[data_key[base_index]]['P'][0]
-    basep_io = np.diagonal(data[data_key[base_index]]['P_interpolator'](k, zb))
-    basep_is = np.diagonal(data_same[data_key[base_index]]['P_interpolator'](k, zb))
-
-    p4_io = np.diagonal(data[data_key[4]]['P_interpolator'](k, zb))
-    p4_is = np.diagonal(data_same[data_key[4]]['P_interpolator'](k, zb))
-
-    p4_ior = p4_io/basep_io
-    p4_isr = p4_is/basep_is
-    pr4_is = np.diagonal(data_same[data_key[4]]['P_ratio_interpolator'](k, zb))
-
-    plt.plot(k, p4_ior, color=colors[j], label='{0} P4 interpolated then ratio'.format(li))
-    j += 1
-    plt.plot(k, p4_isr, color=colors[j], ls='--',label='{0} P4 same interpolated then ratio'.format(li))
-    plt.plot(k, pr4_is, color=colors[j], ls='--',label='{0} P4 same ratio then interpolated'.format(li))
-
-
-#plt.loglog(k, basep_io, color='k', label='base P interpolated')
-#plt.loglog(k, p4_io, color='r', label='P4 interpolated')
-#plt.loglog(k, basep_is, color='g', label='base P interpolated', ls='--')
-#plt.loglog(k, p4_is, color='b', label='P4 interpolated', ls='--')
+plt.semilogx(k, p4_ior, color='r', label='P4 interpolated')
+plt.semilogx(k, p4_isr, color='g', label='base P interpolated')
+plt.semilogx(k, pr4_is, color='b', label='P4 interpolated ratio', ls='--')
+plt.semilogx(np.ones(10)*kmin, np.linspace(0.92, 1.15, 10), color='grey')
 
 plt.title(r'$\ell$ = {0}'.format(ells))
 plt.ylabel('$P(k)$')
 plt.xlabel('$k^{\ell}(z)$')
-plt.grid(True)
+plt.grid(True,which="both",ls="-")
 plt.legend()
-plt.show()
+plt.savefig('{0}cl_plots/l={1}_power_ratio.pdf'.format(savefolder, int(ell)))
 
 
 #########################################################################################################
