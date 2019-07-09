@@ -99,7 +99,7 @@ def P_delta(z, k, from_func='Weyl'):
    
   
 ########################################################################################################
-#                                        GET P(K,Z) IN L-X SPACE                                       #
+#                                   GET CAMB MATTER POWER INTERPOLATORS                                #
 ########################################################################################################
 print('Getting matter power interpolators')
 
@@ -324,7 +324,6 @@ for j, datakey in enumerate(data_key):
         d[:] = 1
         d[k>=kmax] = 0
         cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal((np.flip(bary_P_int(k, zb), axis=1)/np.base_P_int(k, zb))) * wb**2 / Xb**2)
-        # The [:,0] is sort of sketchy 
     cl_baryon_list.append(cl_kappa_bary)
 
 end = time.time()
@@ -480,7 +479,7 @@ plt.clf()
 
 for i, datakey in enumerate(data_key):
     #plt.semilogx(np.arange(10, 5000+1, 1, dtype=np.float64), (cl_baryon_list[i]-cl_baryon_list[base_index])/cl_baryon_list[base_index], color=colors[i], label='{0} - interp before ratio'.format(datakey))    
-    plt.semilogx(lb, (cl_baryon_list2[i]-cl_baryon_list2[base_index])/cl_baryon_list2[base_index], color=colors[i], label='{0} - 2 diag flip'.format(datakey))    
+    plt.semilogx(lb, (cl_baryon_list2[i]-cl_baryon_list2[base_index])/cl_baryon_list2[base_index], color=colors[i], label='{0}'.format(datakey))    
 
 
 plt.title(r'Difference $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}$ BARYON')

@@ -48,6 +48,11 @@ BARYONIC ANALYSIS
 
 --------------------------------------------------------------------------------------------------------------
 
+(July 9)
+1) Try to the the % difference of Cl down from 1.5% at l=5000
+	--> do the same checks as I've done before (try increasing resolution, etc)
+
+
 After this:
 A. As a function of kmax, zmax, how much does Cl^kk change?
 	0) Plot integrand vs X
