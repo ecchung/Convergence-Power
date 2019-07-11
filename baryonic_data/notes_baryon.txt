@@ -50,8 +50,11 @@ BARYONIC ANALYSIS
 
 (July 9)
 1) Try to the the % difference of Cl down from 1.5% at l=5000
-	--> do the same checks as I've done before (try increasing resolution, etc)
+	--> do the same checks as I've done before (try increasing resolution, lpa, etc)
+	--> lpa = 10 gets me down to ~ 0.07% error for my Cl calculations and CAMB's => my calculations were a lot more accurate than I thought since lpa is only used for CAMB and not my calculations anywhere.
 
+2) Also try increasing nz
+--------------------------------------------------------------------------------------------------------------
 
 After this:
 A. As a function of kmax, zmax, how much does Cl^kk change?

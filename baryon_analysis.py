@@ -44,7 +44,7 @@ zcmb    = results.redshift_at_comoving_radial_distance(Xcmb)
 z       = np.logspace(-5.,np.log10(zcmb), 1500, endpoint=True) 
 maxkh   = 2000.
 npoints = 1000
-lpa     = 4  # lens_potential_accuracy
+lpa     = 10  # lens_potential_accuracy - sweet spot is 10
 
 
 ########################################################################################################
@@ -234,8 +234,9 @@ plt.xlabel(r'Multipole $\ell$')
 plt.grid(True)
 plt.ylim(-0.4)
 plt.legend(loc='center right', bbox_to_anchor=(0.5, 0.4), fancybox=True)
-plt.savefig('{0}cl_plots/cl_perdiff.pdf'.format(savefolder))
+plt.savefig('{0}cl_plots/cl_perdiff_lpa={1}.pdf'.format(savefolder,lpa))
 '''
+
 
 
 ######################################################################################################### 
@@ -323,7 +324,7 @@ for j, datakey in enumerate(data_key):
         k = (li+0.5) / Xb
         d[:] = 1
         d[k>=kmax] = 0
-        cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal((np.flip(bary_P_int(k, zb), axis=1)/np.base_P_int(k, zb))) * wb**2 / Xb**2)
+        cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal((np.flip(bary_P_int(k, zb), axis=1)/np.flip(base_P_int(k, zb))) * wb**2 / Xb**2))
     cl_baryon_list.append(cl_kappa_bary)
 
 end = time.time()
@@ -444,6 +445,7 @@ cl_baryon_list2 = np.loadtxt('{0}cl_values/cl_baryon_list2_lmax={1}.txt'.format(
 # ---------------------------------------------------------------------------------------------------------
 
 colors = np.array(['r', 'darkorange', 'yellow', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta','brown'])
+
 
 '''
 #########################################################################################################
