@@ -2,8 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import types
-from plot_script.plot_exp_offset import bottom_offset, top_offset
-#from header.CAMB_cl_calc import P_delta
+from plot_scipt.plot_exp_offset import bottom_offset, top_offset
 
 savefolder   = 'jul08_baryon_analysis/'
 
@@ -178,7 +177,7 @@ for li in ls: # fix l
                                 xycoords='figure fraction', ha='center', 
                                 fontsize=18
                                 ) # suptitle won't show up properly
-    plt.savefig('{0}integrand_plots/dweyl/i_dweyl_l={1}.pdf'.format(savefolder, str(li)))
+    plt.savefig('{0}integrand_plots/i_dweyl_l={1}.pdf'.format(savefolder, str(li)))
     
     
     

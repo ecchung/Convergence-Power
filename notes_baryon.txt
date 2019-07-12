@@ -1,0 +1,68 @@
+BARYONIC ANALYSIS
+(June 24, 2019)
+
+1) P_theoretical = P_delta('weyl') from CAMB
+2) P_DM          = "DMONLY_L100N512.txt"
+3) P_bary        = anything other than "WMAP7" ones 
+
+% z        k [h/Mpc]   P(k) [(Mpc/h)^3]    Delta^2(k)   
+
+
+
+1) Why is the power at l ~ 500 is 10x too low? Plot P(k) at few z's & compare with Fig 1 of van Daalen et al 
+	--> fixed it by not setting k < kmin to zero and just setting the ratio to 1!
+2) Match units!! CAMB's Power is in [Mpc]^3 while sim data is in [Mpc/h]^3
+3) Interpolate the ratios, not individual power spectra!
+
+
+(June 19)
+1) Doing np.diagonal(P_interpolated(k,zb)) gave weird results (and [:,0] was sketchy to begin with) so I just did for loops over each k and z: P_interpolated(k[i], zb[i]) --> very costly and inefficient
+2) SUBLTE ALGORITHMICAL ERROR FIXED: data and data_same didn't match up because every iteration of removing P values that don't have corresponding z in z_same would mutate P array and the indexing was wrong --> just made an array of the indices where elements should be removed and removed them all at once using np.delete()
+3) Weird spikes in cl difference plots using (interpolate -> ratio) but none with (ratio -> interpolate) --> maybe this one is the right one? after all, it's less sketchy
+4) before for loop ~ 5min --> after for loop at l up to 5000 ~ 10min --> after for loop at l up to 10000 ~ 20 min
+
+5) try getting rid of setting d to 0 for k < kmin
+		--> worked in matching CAMB's Cl and mine for k < 500!
+6) play around with scipy interp2d with a known function and give it some data and interpolate over it and see what it does
+		--> np.diagonal works! but does the dot product keep it in the same order?
+		--> get rid of cl_kappa_bary2 that uses the sketchy [:,0]
+		--> equivalent: for loop and np.diagonal(np.flip(P_ratio_int(k, zb), axis=1))
+		
+       		 P_ratio3 = np.zeros(k.shape)     # more accurate ratio because of interpolator is weird with meshgrid?
+       		 for a, ka in enumerate(k):
+       		     P_ratio3[a] = P_ratio_int(ka, zb[a])
+--------------------------------------------------------------------------------------------------------------
+
+(July 8 Notes) --> jul08_baryon_analysis/:
+
+1) I think the interpolator (even though it's the scipy one) implicitly sorts k's from smallest to largest which is why calling diagonal didnt work --> can't do much about it but doing np.diagonal(np.flip(axis=1)) gives same result as the for loop
+
+2) The Cl values obtained from manual codes (both CAMB's original using P_weyl and mine that converts P_weyl into P_delta in the same algorithm) have % difference errors < 0.2% for l < 2000 but for l ~ 5000 it has around 1.5% error (cl_perdiff.pdf)
+
+-- Calculated Cl using diag flip up to l=100000 --
+
+3) Take a look at (cl_baryon.pdf) --> the baryonic effect seems to be much more than the 1.5% from computational error?
+
+4) The Cl difference plot using diag flip (esp AGN - red) seems to match up well with the CDM+Baryons curve in the paper Simon sent (https://arxiv.org/pdf/1710.03747.pdf)	 (cl_diff_lmax=100000.pdf)
+
+
+--------------------------------------------------------------------------------------------------------------
+
+(July 9)
+1) Try to the the % difference of Cl down from 1.5% at l=5000
+	--> do the same checks as I've done before (try increasing resolution, lpa, etc)
+	--> lpa = 10 gets me down to ~ 0.07% error for my Cl calculations and CAMB's => my calculations were a lot more accurate than I thought since lpa is only used for CAMB and not my calculations anywhere.
+
+2) Also try increasing nz
+--------------------------------------------------------------------------------------------------------------
+
+After this:
+A. As a function of kmax, zmax, how much does Cl^kk change?
+	0) Plot integrand vs X
+	1) Cut off integral @ Xmin, Xmax <-> (k,z) 
+		--> (July 11) done -> cl_CAMB_analysis.py & cl_bary_analysis.py (save to jul08)
+	2) Cut off R(k,z) and set it to 1 outside a certain range
+	3) Plot for different specific l values, plot the integrand of Cl with equivalent axes of z (top) and k 	(bottom) that both correspond to X -> change of variables of the integrand from X to k to see the integrand
+
+(July 8)
+B. Check how big these offsets are compared with the forecasted error bars on Clkk for various upcoming experiments (Simons Observatory, CMB-Stage 4, CMB-HD)
