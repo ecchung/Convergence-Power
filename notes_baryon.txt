@@ -66,3 +66,37 @@ A. As a function of kmax, zmax, how much does Cl^kk change?
 
 (July 8)
 B. Check how big these offsets are compared with the forecasted error bars on Clkk for various upcoming experiments (Simons Observatory, CMB-Stage 4, CMB-HD)
+
+
+--------------------------------------------------------------------------------------------------------------
+(July 16)
+
+import os
+dirpath = os.getcwd()
+
+import sys
+sys.path.append('../')
+
+import sys, os
+sys.path.append(os.path.abspath(os.path.join('..', 'config')))
+
+Try running every pieces of code first, esp. plot_bary_cl
+	> baryon_analysis_program
+		>> mainscript.py		(O)
+		
+		> header
+			>> CAMB_header.py 			(O)
+			>> import_baryon_data.py	(O)
+			>> calculate_cl.py			(O)
+			
+		> analysis
+			>> cl_bary_kmax_analysis.py		(X)	
+			>> cl_bary_Xmax_Xmin_analysis.py(X)
+			>> cl_CAMB_Xmax_Xmin_analysis.py(X)
+			
+		>> plot_CAMB_cl.py	(X)
+		>> plot_bary_cl.py	(X)
+		
+		> plot_scripts
+			>> ...
+
