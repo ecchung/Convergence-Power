@@ -20,7 +20,9 @@ from header.import_baryon_data import import_data, interpolate_ratio
 savefolder = dirpath+'/../outputs_jul17/kmax_analysis/'
 datafolder = 'baryonic_data'
 
-colors = np.array(['r', 'darkorange', 'yellow', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta','brown'])
+colors11 = np.array(['r', 'darkorange', 'yellow', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta', 'brown','k'])
+colors21 = np.array(['firebrick', 'red', 'darkorange', 'orange', 'yellow', 'greenyellow', 'limegreen', 'forestgreen', 'mediumseagreen',\
+'aqua', 'deepskyblue', 'dodgerblue', 'royalblue', 'mediumblue', 'navy', 'darkslateblue', 'indigo', 'darkviolet', 'magenta', 'deeppink','k'])
 
 ######################################################################################################### 
 #                                     IMPORTING BARYONIC DATA                                           #
@@ -54,7 +56,7 @@ kmax   = 514.71854                     # largest k value from all simulations
 kmin   = 0.062831853                   # smallest k value from all simulations
 K_max  = np.linspace(kmax-cutoff, kmax, 10)      # varying kmax
 K_max  = np.flip(K_max)
-K_max  = np.linspace(0, 50, 9)
+K_max  = np.linspace(0, 100, 20)
 K_max  = np.append(K_max, kmax)
 lmax   = 1e5
 
@@ -106,11 +108,11 @@ for n, datakey in enumerate(data_key):
     plt.title(datakey + '\n' + r'$C_\ell$ difference at $k_{max}$')
     
     for j, Kmax in enumerate(K_max):
-        print(j)
+        print(j, Kmax)
         cl_bary_kmax = cl_ALLbary_kmax[n][j]
         cl_bary_norm = cl_ALLbary_norm[n][j]
-        plt.semilogx(L, (cl_bary_kmax-cl_bary_DMONLY[j])/cl_bary_DMONLY[j], color=colors[j], label=r'$k_{max}$' + '= {0}'.format(round(Kmax,2)))
-        plt.semilogx(L, (cl_bary_norm-cl_bary_DMONLY[j])/cl_bary_DMONLY[j], color=colors[j], label=r'$k_{max}$' + '= {0}'.format(round(Kmax,2)), ls='--')
+        plt.semilogx(L, (cl_bary_kmax-cl_bary_DMONLY[j])/cl_bary_DMONLY[j], color=colors21[j], label=r'$k_{max}$' + '= {0}'.format(round(Kmax,2)))
+        #plt.semilogx(L, (cl_bary_norm-cl_bary_DMONLY[j])/cl_bary_DMONLY[j], color=colors21[j], label=r'$k_{max}$' + '= {0}'.format(round(Kmax,2)), ls='--')
         
     plt.legend(ncol=2)
     plt.ylabel(r'$(C_\ell^{\kappa\kappa, bary} - C_\ell^{\kappa\kappa, DMONLY})/C_\ell^{\kappa\kappa, DMONLY}$')
