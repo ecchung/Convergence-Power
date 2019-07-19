@@ -1,3 +1,4 @@
+
 BARYONIC ANALYSIS
 (June 24, 2019)
 
@@ -100,3 +101,6 @@ Try running every pieces of code first, esp. plot_bary_cl
 		> plot_scripts
 			>> ...
 
+
+scp user@server:/path/to/remotefile.zip /Local/Target/Destination
+scp -P 2222 file.ext username@domain:~/ 

@@ -16,9 +16,9 @@ def import_data():
     'P_interpolator'
     '''
     # Load data file names
-    datafolder = dirpath+'/../baryonic_data/'
+    datafolder = dirpath+'/baryonic_data/'
     if __name__ == '__main__':
-        datafolder = dirpath+'/baryonic_data/'
+        datafolder = dirpath+'/../baryonic_data/'
     datafile = np.loadtxt(datafolder+'data.txt', dtype=str)
     
     # Load data into a dictionary accessible with keys that are name of the files without .txt and 'z', 'X', 'k', 'P'
