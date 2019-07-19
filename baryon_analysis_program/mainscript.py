@@ -62,13 +62,16 @@ lb                     = np.loadtxt('{0}cl_values/lb.txt'.format(savefolder))
 # -------------------------------------------------------------------------------------------------------
 
 ######################################################################################################### 
-#                                    IMPORT COVARIANCE MATRIX                                           #
+#                                           ERROR ANALYSIS                                              #
 ######################################################################################################### 
-
+                                #--------IMPORT COV. MATRIX-------# 
 covmat    = np.load('covmat.npy')
 covinv    = inv(covmat)
 sigma     = np.sqrt((covmat.diagonal()))
 lBinEdges = np.load('lbin_edges.npy')
+
+                                #----------CALC DELTA CHI----------#                                
+'''
 clBinned  = np.zeros((len(data_key), len(lBinEdges)-1))  # average the cl values within the bins 
 lMidBin   = np.zeros(len(lBinEdges)-1)  # values of l in the middle of the bin
 d         = np.ones(lb.shape)
@@ -104,9 +107,39 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','lMidBin'), 'w+') as flmb:
 
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','DeltaChi2'), 'w+') as fdc:
     np.savetxt(fdc, DeltaChi2)
-    
+'''    
+# Import values
+clMeanBin = np.loadtxt('{0}cl_values/clBinned.txt'.format(savefolder))
+lMidBin   = np.loadtxt('{0}cl_values/lMidBin.txt'.format(savefolder))
+DeltaChi2 = np.loadtxt('{0}cl_values/DeltaChi2.txt'.format(savefolder))
 
+                                #--------DELTA CHI ANALYSIS--------# 
+clBary   = cl_baryon_list_lmax1e5
+clMidBin = np.zeros((len(data_key), len(lMidBin)))
 
+# Extract the Cl values at ell MidBin
+for j, l in enumerate(lMidBin):
+    for i in range(len(data_key)):
+        clMidBin[i,j] = clBary[i,int(lMidBin[j]-10)]
+
+sigmaFrac = sigma/clMidBin[base_index] # fractional sigma
+
+                                #-------PLOT WITH DELTA CHI-------# 
+plt.figure(7, figsize=(10,6))
+plt.clf()
+
+for i, datakey in enumerate(data_key): 
+    plt.semilogx(lb, (clBary[i]-clBary[base_index])/clBary[base_index], color=colors[i], label=datakey)    
+
+plt.errorbar(lMidBin, clMidBin[base_index], yerr=sigmaFrac, ecolor='k')
+plt.title(r'Difference $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}$ BARYON')
+plt.ylabel(r'($C_\ell^{\kappa\kappa, bary}$ - $C_\ell^{\kappa\kappa, DMONLY}$)/$C_\ell^{\kappa\kappa, DMONLY}$')
+plt.xlabel(r'Multipole $\ell$')
+plt.grid(True)
+plt.legend(ncol=2, loc='upper left', prop={'size': 10})
+plt.show
+
+#plt.savefig('{0}cl_plots/cl_diff_lmax={1}.pdf'.format(savefolder, lmax))
 
 
 
