@@ -185,7 +185,7 @@ def CAMB_Delta(save=False, savefolder=None, savename=None):
 #                                    CALCULATING BARYONIC CL VALUES                                     #
 ######################################################################################################### 
 
-def calc_cl_bary(data_key, data, base_index, nz, save=False, savefolder=None, savename=None, R_int=True):
+def calc_cl_bary(data_key, data, base_index, lmax, dl, nz, save=False, savefolder=None, savename=None, R_int=True):
     '''
     Make sure that if R_int == True, data is data_same
     '''
@@ -202,7 +202,7 @@ def calc_cl_bary(data_key, data, base_index, nz, save=False, savefolder=None, sa
     
     # Get lensing window function (flat universe)
     wb = W(Xb, Ab, Xcmb)
-    lb = np.arange(10,  lmax+1, 1, dtype=np.float64)
+    lb = np.arange(10,  lmax+1, dl, dtype=np.float64)
     d  = np.ones(Xb.shape)
     cl_baryon_list = []
     

@@ -39,7 +39,9 @@ cl_delta = CAMB_Delta(save=True, savefolder=savefolder+'cl_values/', savename='c
 
                                 #-----------BARYONIC CL-----------# 
 nz = 100
-cl_baryon_list = calc_cl_bary(data_key, data_same, base_index, nz, save=True, savefolder=savefolder+'cl_values/', savename='cl_bary_list', R_int=True)
+lmax = 1e5
+dl = 1
+cl_baryon_list = calc_cl_bary(data_key, data_same, base_index, lmax, dl, nz, save=True, savefolder=savefolder+'cl_values/', savename='cl_bary_list_lmax1e5', R_int=True)
 '''
 
 ######################################################################################################### 
@@ -49,9 +51,13 @@ cl_baryon_list = calc_cl_bary(data_key, data_same, base_index, nz, save=True, sa
 cl_camb  = np.loadtxt('{0}cl_values/cl_camb.txt'.format(savefolder))
 cl_weyl  = np.loadtxt('{0}cl_values/cl_weyl.txt'.format(savefolder))
 cl_delta = np.loadtxt('{0}cl_values/cl_delta.txt'.format(savefolder))   
+l        = np.loadtxt('{0}cl_values/l.txt'.format(savefolder))  
 
                                 #-----------BARYONIC CL-----------# 
-cl_baryon_list  = np.loadtxt('{0}cl_values/cl_bary_list.txt'.format(savefolder))
+cl_baryon_list         = np.loadtxt('{0}cl_values/cl_bary_list.txt'.format(savefolder))
+cl_baryon_list_lmax1e5 = np.loadtxt('{0}cl_values/cl_bary_list_lmax1e5.txt'.format(savefolder))
+lb                     = np.loadtxt('{0}cl_values/lb_lmax1e5.txt'.format(savefolder))
+
 
 # -------------------------------------------------------------------------------------------------------
 
@@ -59,10 +65,46 @@ cl_baryon_list  = np.loadtxt('{0}cl_values/cl_bary_list.txt'.format(savefolder))
 #                                    IMPORT COVARIANCE MATRIX                                           #
 ######################################################################################################### 
 
-covmat = np.load('covmat.npy')
-covinv = inv(covmat)
-sigma  = (covmat.diagonal())**2
+covmat    = np.load('covmat.npy')
+covinv    = inv(covmat)
+sigma     = np.sqrt((covmat.diagonal()))
+lBinEdges = np.load('lbin_edges.npy')
+clBinned  = np.zeros((len(data_key), len(lBinEdges)-1))  # average the cl values within the bins 
+lMidBin   = np.zeros(len(lBinEdges)-1)  # values of l in the middle of the bin
+d         = np.ones(lb.shape)
 
+for j, clBaryon in enumerate(cl_baryon_list_lmax1e5):
+    cl = clBaryon
+    for i in range(len(lBinEdges)-1):
+        
+        if j == 0: # just do this once
+            lMidBin[i] = (lBinEdges[i] + lBinEdges[i+1]) / 2
+        
+        d[:] = 1  # reset d to all 1
+        d[lb<lBinEdges[i]] = 0
+        d[lb>=lBinEdges[i+1]] = 0
+        cl = clBaryon  # reset cl to original clBaryon
+        cl = cl*d
+        
+        clBinMean = sum(cl) / sum(d)
+        clBinned[j][i] = clBinMean # save to ith bin of jth simulation
+
+# Calculate delta chi squared for each simulation
+DeltaChi2 = np.zeros(data_key.shape)
+clDMO = clBinned[base_index]
+for i, clBary in enumerate(clBinned):
+    DeltaChi2[i] = sum(((clBary-clDMO)/sigma)**2)
+    
+# Save values
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','clBinned'), 'w+') as fclbin:
+    np.savetxt(fclbin, clBinned)
+
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','lMidBin'), 'w+') as flmb:
+    np.savetxt(flmb, lMidBin)
+
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','DeltaChi2'), 'w+') as fdc:
+    np.savetxt(fdc, DeltaChi2)
+    
 
 
 
