@@ -21,7 +21,7 @@ savefolder = dirpath+'/../outputs_jul17/kmax_analysis/'
 datafolder = 'baryonic_data'
 
 colors11 = np.array(['r', 'darkorange', 'yellow', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta', 'brown','k'])
-colors21 = np.array(['firebrick', 'red', 'darkorange', 'orange', 'yellow', 'greenyellow', 'limegreen', 'forestgreen', 'mediumseagreen',\
+colors21 = np.array(['firebrick', 'red', 'coral', 'orange', 'yellow', 'greenyellow', 'limegreen', 'mediumseagreen', 'forestgreen',\
 'aqua', 'deepskyblue', 'dodgerblue', 'royalblue', 'mediumblue', 'navy', 'darkslateblue', 'indigo', 'darkviolet', 'magenta', 'deeppink','k'])
 
 ######################################################################################################### 

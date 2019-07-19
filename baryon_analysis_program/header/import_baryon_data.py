@@ -16,8 +16,9 @@ def import_data():
     'P_interpolator'
     '''
     # Load data file names
-    datafolder = dirpath+'/baryonic_data/'
-    if __name__ == '__main__':
+    if dirpath == '/mnt/raid-cita/echung/Convergence-Power/baryon_analysis_program':
+        datafolder = dirpath+'/baryonic_data/'
+    else:
         datafolder = dirpath+'/../baryonic_data/'
     datafile = np.loadtxt(datafolder+'data.txt', dtype=str)
     

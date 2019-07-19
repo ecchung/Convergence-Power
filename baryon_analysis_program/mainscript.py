@@ -10,6 +10,7 @@ from camb import model, initialpower
 from scipy.constants import c           # c / 1000 = 299 km/s
 import scipy.integrate as integrate
 from scipy import interpolate
+from numpy.linalg import inv
 from header.CAMB_header import *
 from header.calculate_cl import CAMB_auto, CAMB_Weyl, CAMB_Delta, P_delta, calc_cl_bary
 from header.import_baryon_data import import_data, interpolate_ratio
@@ -59,7 +60,9 @@ cl_baryon_list  = np.loadtxt('{0}cl_values/cl_bary_list.txt'.format(savefolder))
 ######################################################################################################### 
 
 covmat = np.load('covmat.npy')
-sigma = (covmat.diagonal())**2
+covinv = inv(covmat)
+sigma  = (covmat.diagonal())**2
+
 
 
 
