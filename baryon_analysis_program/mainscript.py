@@ -56,7 +56,7 @@ l        = np.loadtxt('{0}cl_values/l.txt'.format(savefolder))
                                 #-----------BARYONIC CL-----------# 
 cl_baryon_list         = np.loadtxt('{0}cl_values/cl_bary_list.txt'.format(savefolder))
 cl_baryon_list_lmax1e5 = np.loadtxt('{0}cl_values/cl_bary_list_lmax1e5.txt'.format(savefolder))
-lb                     = np.loadtxt('{0}cl_values/lb_lmax1e5.txt'.format(savefolder))
+lb                     = np.loadtxt('{0}cl_values/lb.txt'.format(savefolder))
 
 
 # -------------------------------------------------------------------------------------------------------
