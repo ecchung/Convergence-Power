@@ -64,13 +64,48 @@ lb                     = np.loadtxt('{0}cl_values/lb.txt'.format(savefolder))
 ######################################################################################################### 
 #                                           ERROR ANALYSIS                                              #
 ######################################################################################################### 
+fsky = 0.5
+nbin = 15
+Lrange = np.linspace(10000,40000,nbin)
+
                                 #--------IMPORT COV. MATRIX-------# 
 covmat    = np.load('error_data/covmat.npy') # (129, 129) --> li, li
-covinv    = inv(covmat)                      # (129, 129) --> li, li
-covdiag   = covmat.diagonal() * (2.912603855229585/41253.) / fsky # (129, ) --> li  KEEP!
-sigma     = np.sqrt(covdiag)                                      # (129, ) --> li
+covInv    = inv(covmat)                      # (129, 129) --> li, li
+covDiag   = covmat.diagonal() * (2.912603855229585/41253.) / fsky # (129, ) --> li  KEEP!
 lBinEdges = np.load('error_data/lbin_edges.npy')                  # (130, ) --> li + 1
+lMidBin   = (ellBinEdges[1:] + ellBinEdges[:-1]) / 2              # (129, ) --> li
 
+clBary   = cl_baryon_list_lmax1e5                                           # (10, 99991) --> data_key, l
+BARY = [] # interpolated cl for all bary
+for clbary in clBary:
+    BARY.append(interpolate.interp1d(lb,clbary,bounds_error=True))
+    
+                                #--------FANCY BINNED ERRORS-------# 
+                                #       FROM NAM NGUYEN'S CODE     #
+xs,ys = [],[]
+x,y = 0.,0.
+j = 0
+count = 0
+
+for i in range(len(covDiag)):
+    if Lrange[j] < lMidBin[i]: # end of bin
+        if count != 0:
+            xs.append(x/count)
+            ys.append(1./np.sqrt(y))
+            count = 0
+        j += 1
+        x,y = 0.,0.
+    count += 1
+    x += lMidBin[i]
+    y += 1./covDiag[i]
+
+if count != 0:
+    xs.append(x/count)
+    ys.append(1./np.sqrt(y))
+
+xs = np.array(xs)
+ys = np.array(ys) # y error
+                                
                                 #----------CALC DELTA CHI----------#                                
 '''
 clBinned  = np.zeros((len(data_key), len(lBinEdges)-1))  # average the cl values within the bins 
@@ -119,21 +154,17 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','DeltaChi2'), 'w+') as fdc
                                 
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','DeltaChi2Inv'), 'w+') as fdci:
     np.savetxt(fdci, DeltaChi2Inv)
-'''
                                 
-#'''    
 # Import values
 clMeanBin = np.loadtxt('{0}cl_values/clBinned.txt'.format(savefolder))      # (15,) --> bin
 lMidBin   = np.loadtxt('{0}cl_values/lMidBin.txt'.format(savefolder))       # (15,) --> bin
 DeltaChi2 = np.loadtxt('{0}cl_values/DeltaChi2.txt'.format(savefolder))     # (10,) --> data_key
 
-                                #-----------SIGMA ANALYSIS---------# 
-                                
-clBary   = cl_baryon_list_lmax1e5                                           # (10, 99991) --> data_key, l
-FDM = [] # interpolated cl for all bary
-for clbary in clBary:
-    FDM.append(interpolate.interp1d(lb,clbary,bounds_error=True))
+'''
 
+
+
+                                #-----------SIGMA ANALYSIS---------# 
 '''
 clMidBin = np.zeros((len(data_key), len(lMidBin)))                          # (10, 129)   --> data_key, li
 # Extract the Cl values at ell MidBin
@@ -144,43 +175,22 @@ for j, l in enumerate(lMidBin):
 sigmaFrac = sigma/clMidBin[base_index] # fractional sigma                   # (129, ) --> li
 '''
 
-                                #--------FANCY BINNED ERRORS-------# 
-                                #       FROM NAM NGUYEN'S CODE     #
-xs,ys = [],[]
-x,y = 0.,0.
-j = 0
-count = 0
-
-for i in range(len(covDiag)):
-    if Lrange[j] < lMidBin[i]: # end of bin
-        if count != 0:
-            xs.append(x/count)
-            ys.append(1./np.sqrt(y))
-            count = 0
-        j += 1
-        x,y = 0.,0.
-    count += 1
-    x += lMidBin[i]
-    y += 1./covDiag[i]
-
-if count != 0:
-    xs.append(x/count)
-    ys.append(1./np.sqrt(y))
-
-
-xs = np.array(xs)
-ys = np.array(ys)
-
 
                                 #------------S/N ANALYSIS----------# 
-SN = []
-for fdm in FDM:
-    SN.append(np.sqrt(sum( (fdm(xs)/ys)**2) ))
+SN    = []
+DCHI2 = []
 
-SN = np.array(SN)
+for bary in BARY:
+    DCHI2.append(sum( (bary(xs)-BARY[base_index](xs)) / ys)**2 )
+    SN.append(np.sqrt(sum( (bary(xs)/ys)**2) ))
+
+SN    = np.array(SN)
+DCHI2 = np.array(DCHI2)
 
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN'), 'w+') as fs:
     np.savetxt(fs, SN)
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','DCHI2'), 'w+') as fdc:
+    np.savetxt(fdc, DCHI2)
 
 ''' My failed SN
 SN_MidBin  = np.zeros((len(data_key), len(sigma)))
