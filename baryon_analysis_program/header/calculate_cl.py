@@ -47,7 +47,7 @@ PK_weyl  = camb.get_matter_power_interpolator(pars, nonlinear=True, hubble_units
 #########################################################################################################
 
 # CAMB internal function
-def CAMB_auto(save=False, savefolder=None, savename=None):
+def CAMB_auto(lmax=lmax, save=False, savefolder=None, savename=None):
     '''
     save -> (bool)
     savefolder -> (str)
@@ -56,6 +56,7 @@ def CAMB_auto(save=False, savefolder=None, savename=None):
     savefolder example: 'jul08_baryon_analysis/cl_values/'
     savename example: 'cl_camb'
     '''
+    l = np.arange(1,lmax+1)
     pars.set_for_lmax(lmax, lens_potential_accuracy=lpa)
     results = camb.get_results(pars)
     cl_camb = results.get_lens_potential_cls(lmax) 

@@ -5,6 +5,7 @@ beginning = time.time()
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import camb
 from camb import model, initialpower
 from scipy.constants import c           # c / 1000 = 299 km/s
@@ -33,7 +34,7 @@ data_same = interpolate_ratio(data_key, data, base_index)
 #                                    CALCULATE & SAVE CL VALUES                                         #
 ######################################################################################################### 
                                 #-------------CAMB CL-------------# 
-cl_camb  = CAMB_auto(save=True, savefolder=savefolder+'cl_values/', savename='cl_camb')
+cl_camb  = CAMB_auto(lmax=40000, save=True, savefolder=savefolder+'cl_values/', savename='cl_camb')
 cl_weyl  = CAMB_Weyl(save=True, savefolder=savefolder+'cl_values/', savename='cl_weyl')
 cl_delta = CAMB_Delta(save=True, savefolder=savefolder+'cl_values/', savename='cl_delta')
 
@@ -48,10 +49,10 @@ cl_baryon_list = calc_cl_bary(data_key, data_same, base_index, lmax, dl, nz, sav
 #                                         IMPORT CL VALUES                                              #
 ######################################################################################################### 
                                 #-------------CAMB CL-------------# 
-cl_camb  = np.loadtxt('{0}cl_values/cl_camb.txt'.format(savefolder))
-cl_weyl  = np.loadtxt('{0}cl_values/cl_weyl.txt'.format(savefolder))
-cl_delta = np.loadtxt('{0}cl_values/cl_delta.txt'.format(savefolder))   
-l        = np.loadtxt('{0}cl_values/l.txt'.format(savefolder))  
+cl_camb  = np.loadtxt('{0}cl_values/cl_camb.txt'.format(savefolder))    # l from 0 to 40000
+cl_weyl  = np.loadtxt('{0}cl_values/cl_weyl.txt'.format(savefolder))    # l from 0 to 5000
+cl_delta = np.loadtxt('{0}cl_values/cl_delta.txt'.format(savefolder))   # l from 0 to 5000
+l        = np.loadtxt('{0}cl_values/l.txt'.format(savefolder))  # currently range from 0 to 40000
 
                                 #-----------BARYONIC CL-----------# 
 cl_baryon_list         = np.loadtxt('{0}cl_values/cl_bary_list.txt'.format(savefolder))
@@ -73,7 +74,7 @@ covmat    = np.load('error_data/covmat.npy') # (129, 129) --> li, li
 covInv    = inv(covmat)                      # (129, 129) --> li, li
 covDiag   = covmat.diagonal() * (2.912603855229585/41253.) / fsky # (129, ) --> li  KEEP!
 lBinEdges = np.load('error_data/lbin_edges.npy')                  # (130, ) --> li + 1
-lMidBin   = (ellBinEdges[1:] + ellBinEdges[:-1]) / 2              # (129, ) --> li
+lMidBin   = (lBinEdges[1:] + lBinEdges[:-1]) / 2              # (129, ) --> li
 
 clBary   = cl_baryon_list_lmax1e5                                           # (10, 99991) --> data_key, l
 BARY = [] # interpolated cl for all bary
@@ -82,6 +83,7 @@ for clbary in clBary:
     
                                 #--------FANCY BINNED ERRORS-------# 
                                 #       FROM NAM NGUYEN'S CODE     #
+                                #----------------------------------#           
 xs,ys = [],[]
 x,y = 0.,0.
 j = 0
@@ -105,9 +107,9 @@ if count != 0:
 
 xs = np.array(xs)
 ys = np.array(ys) # y error
-                                
+'''                                
                                 #----------CALC DELTA CHI----------#                                
-'''
+
 clBinned  = np.zeros((len(data_key), len(lBinEdges)-1))  # average the cl values within the bins 
 lMidBin   = np.zeros(len(lBinEdges)-1)  # values of l in the middle of the bin
 d         = np.ones(lb.shape)
@@ -164,8 +166,8 @@ DeltaChi2 = np.loadtxt('{0}cl_values/DeltaChi2.txt'.format(savefolder))     # (1
 
 
 
-                                #-----------SIGMA ANALYSIS---------# 
-'''
+'''                                #-----------SIGMA ANALYSIS---------# 
+
 clMidBin = np.zeros((len(data_key), len(lMidBin)))                          # (10, 129)   --> data_key, li
 # Extract the Cl values at ell MidBin
 for j, l in enumerate(lMidBin):
@@ -173,14 +175,13 @@ for j, l in enumerate(lMidBin):
         clMidBin[i,j] = clBary[i,int(lMidBin[j]-10)]
 
 sigmaFrac = sigma/clMidBin[base_index] # fractional sigma                   # (129, ) --> li
-'''
+''' #
 
+                                #----S/N + DELTA CHI SQ ANALYSIS---# 
+SN    = []    # (10, ) --> data_key
+DCHI2 = []    # (10, ) --> data_key
 
-                                #------------S/N ANALYSIS----------# 
-SN    = []
-DCHI2 = []
-
-for bary in BARY:
+for bary in BARY: 
     DCHI2.append(sum( (bary(xs)-BARY[base_index](xs)) / ys)**2 )
     SN.append(np.sqrt(sum( (bary(xs)/ys)**2) ))
 
@@ -191,6 +192,9 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN'), 'w+') as fs:
     np.savetxt(fs, SN)
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','DCHI2'), 'w+') as fdc:
     np.savetxt(fdc, DCHI2)
+    
+SIGMA_F = ys/BARY[base_index](xs)  # (15, ) --> bin # fractional sigma
+SIGMA = ys
 
 ''' My failed SN
 SN_MidBin  = np.zeros((len(data_key), len(sigma)))
@@ -210,21 +214,44 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN_MeanBin'), 'w+') as fm
     np.savetxt(fmean, SN_MeanBin)
 '''
 
-'''
-                                #----------PLOT WITH SIGMA---------# 
+#'''
+                                #----------PLOT WITH ERROR---------# 
+mpl.rcParams.update({'font.family':'serif'})
+mpl.rcParams.update({'mathtext.fontset':'cm'})
+
 plt.clf()
 plt.figure(7, figsize=(10,6))
 for i, datakey in enumerate(data_key): 
-    plt.semilogx(lb, (clBary[i]-clBary[base_index])/clBary[base_index], color=colors[i], label=datakey)    
+    plt.semilogy(lb, clBary[i], color=colors[i], label=datakey)   # (99991,) --> bin 
+    plt.errorbar(xs, BARY[i](xs), yerr=SIGMA, ecolor=colors[i], capsize=4, fmt='none')            # (15,) --> bin
 
-plt.errorbar(lMidBin[:100], clMidBin[0][:100], yerr=sigmaFrac[:100], ecolor='k', capsize=2) # (129,)
-plt.title(r'Difference $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}$ BARYON')
-plt.ylabel(r'($C_\ell^{\kappa\kappa, bary}$ - $C_\ell^{\kappa\kappa, DMONLY}$)/$C_\ell^{\kappa\kappa, DMONLY}$')
-plt.xlabel(r'Multipole $\ell$')
+plt.semilogy(l, cl_camb, color='k', label='cl CAMB no baryon')
+plt.title(r'$C_\ell^{\kappa\kappa}$ BARYON', size=20)
+plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$', size=20)
+plt.xlabel(r'$\ell$', size=20)
+plt.xlim(10000,38000)
+plt.ylim(1.3e-11,2.2e-10)
+plt.grid(True)
+plt.legend(ncol=2, loc='upper right', prop={'size': 10})
+#plt.show()
+plt.savefig('{0}cl_plots/cl_with_error.pdf'.format(savefolder))
+
+
+
+plt.clf()
+plt.figure(7, figsize=(10,6))
+for i, datakey in enumerate(data_key): 
+    plt.semilogx(lb, (clBary[i]-clBary[base_index])/clBary[base_index], color=colors[i], label=datakey)   # (99991,) --> bin 
+    plt.errorbar(xs, (BARY[i](xs)-BARY[base_index](xs))/BARY[base_index](xs), yerr=SIGMA_F, ecolor=colors[i], capsize=4, fmt='none', label='CMB-HD')            # (15,) --> bin
+
+plt.title(r'Difference $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}$ BARYON', size=20)
+plt.ylabel(r'($C_\ell^{\kappa\kappa, bary}$ - $C_\ell^{\kappa\kappa, DMONLY}$)/$C_\ell^{\kappa\kappa, DMONLY}$', size=20)
+plt.xlabel(r'$\ell$', size=20)
+plt.xlim(8000,45000)
 plt.grid(True)
 plt.legend(ncol=2, loc='upper left', prop={'size': 10})
-plt.show()
-plt.savefig('{0}cl_plots/cl_fracdiff_error.pdf'.format(savefolder))
+#plt.show()
+plt.savefig('{0}cl_plots/cl_diff_with_error.pdf'.format(savefolder))
 #'''
 
 ending = time.time()

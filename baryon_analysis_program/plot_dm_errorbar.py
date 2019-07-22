@@ -108,7 +108,3 @@ ax2.set_xlabel('$k$ (Mpc$^{-1}$)',size=20)
 plt.savefig('dm_errorbar_cmbhd_addaxis.pdf')
 
 
-
-
-#For me: try
-# lbins = np.arange(10000, 40000, 232)
