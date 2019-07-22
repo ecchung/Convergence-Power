@@ -65,10 +65,11 @@ lb                     = np.loadtxt('{0}cl_values/lb.txt'.format(savefolder))
 #                                           ERROR ANALYSIS                                              #
 ######################################################################################################### 
                                 #--------IMPORT COV. MATRIX-------# 
-covmat    = np.load('covmat.npy')
-covinv    = inv(covmat)
-sigma     = np.sqrt((covmat.diagonal()))
-lBinEdges = np.load('lbin_edges.npy')
+covmat    = np.load('error_data/covmat.npy') # (129, 129) --> li, li
+covinv    = inv(covmat)                      # (129, 129) --> li, li
+covdiag   = covmat.diagonal() * (2.912603855229585/41253.) / fsky # (129, ) --> li  KEEP!
+sigma     = np.sqrt(covdiag)                                      # (129, ) --> li
+lBinEdges = np.load('error_data/lbin_edges.npy')                  # (130, ) --> li + 1
 
                                 #----------CALC DELTA CHI----------#                                
 '''
@@ -120,29 +121,73 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','DeltaChi2Inv'), 'w+') as 
     np.savetxt(fdci, DeltaChi2Inv)
 '''
                                 
-'''    
+#'''    
 # Import values
-clMeanBin = np.loadtxt('{0}cl_values/clBinned.txt'.format(savefolder))
-lMidBin   = np.loadtxt('{0}cl_values/lMidBin.txt'.format(savefolder))
-DeltaChi2 = np.loadtxt('{0}cl_values/DeltaChi2.txt'.format(savefolder))
+clMeanBin = np.loadtxt('{0}cl_values/clBinned.txt'.format(savefolder))      # (15,) --> bin
+lMidBin   = np.loadtxt('{0}cl_values/lMidBin.txt'.format(savefolder))       # (15,) --> bin
+DeltaChi2 = np.loadtxt('{0}cl_values/DeltaChi2.txt'.format(savefolder))     # (10,) --> data_key
 
                                 #-----------SIGMA ANALYSIS---------# 
-clBary   = cl_baryon_list_lmax1e5
-clMidBin = np.zeros((len(data_key), len(lMidBin)))
+                                
+clBary   = cl_baryon_list_lmax1e5                                           # (10, 99991) --> data_key, l
+FDM = [] # interpolated cl for all bary
+for clbary in clBary:
+    FDM.append(interpolate.interp1d(lb,clbary,bounds_error=True))
 
+'''
+clMidBin = np.zeros((len(data_key), len(lMidBin)))                          # (10, 129)   --> data_key, li
 # Extract the Cl values at ell MidBin
 for j, l in enumerate(lMidBin):
     for i in range(len(data_key)):
         clMidBin[i,j] = clBary[i,int(lMidBin[j]-10)]
 
-sigmaFrac = sigma/clMidBin[base_index] # fractional sigma
+sigmaFrac = sigma/clMidBin[base_index] # fractional sigma                   # (129, ) --> li
+'''
+
+                                #--------FANCY BINNED ERRORS-------# 
+                                #       FROM NAM NGUYEN'S CODE     #
+xs,ys = [],[]
+x,y = 0.,0.
+j = 0
+count = 0
+
+for i in range(len(covDiag)):
+    if Lrange[j] < lMidBin[i]: # end of bin
+        if count != 0:
+            xs.append(x/count)
+            ys.append(1./np.sqrt(y))
+            count = 0
+        j += 1
+        x,y = 0.,0.
+    count += 1
+    x += lMidBin[i]
+    y += 1./covDiag[i]
+
+if count != 0:
+    xs.append(x/count)
+    ys.append(1./np.sqrt(y))
+
+
+xs = np.array(xs)
+ys = np.array(ys)
+
 
                                 #------------S/N ANALYSIS----------# 
-SN_MidBin = np.zeros((len(data_key), len(sigma)))
+SN = []
+for fdm in FDM:
+    SN.append(np.sqrt(sum( (fdm(xs)/ys)**2) ))
+
+SN = np.array(SN)
+
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN'), 'w+') as fs:
+    np.savetxt(fs, SN)
+
+''' My failed SN
+SN_MidBin  = np.zeros((len(data_key), len(sigma)))
 SN_MeanBin = np.zeros((len(data_key), len(sigma)))
 
-SN_MidBin = np.zeros(data_key.shape)
-SN_MeanBin = np.zeros(data_key.shape)
+SN_MidBin  = np.zeros(data_key.shape)       # (10,) --> data_key
+SN_MeanBin = np.zeros(data_key.shape)       # (10,) --> data_key
 
 for i in range(len(data_key)):
     SN_MidBin[i] = np.sqrt(sum((clMidBin[i]/sigma) **2))
@@ -153,24 +198,24 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN_MidBin'), 'w+') as fmi
                         
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN_MeanBin'), 'w+') as fmean:
     np.savetxt(fmean, SN_MeanBin)
+'''
 
-
+'''
                                 #----------PLOT WITH SIGMA---------# 
 plt.clf()
 plt.figure(7, figsize=(10,6))
 for i, datakey in enumerate(data_key): 
     plt.semilogx(lb, (clBary[i]-clBary[base_index])/clBary[base_index], color=colors[i], label=datakey)    
 
-plt.errorbar(lMidBin[:100], clMidBin[0][:100], yerr=sigmaFrac[:100], ecolor='k', capsize=2)
+plt.errorbar(lMidBin[:100], clMidBin[0][:100], yerr=sigmaFrac[:100], ecolor='k', capsize=2) # (129,)
 plt.title(r'Difference $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}$ BARYON')
 plt.ylabel(r'($C_\ell^{\kappa\kappa, bary}$ - $C_\ell^{\kappa\kappa, DMONLY}$)/$C_\ell^{\kappa\kappa, DMONLY}$')
 plt.xlabel(r'Multipole $\ell$')
 plt.grid(True)
 plt.legend(ncol=2, loc='upper left', prop={'size': 10})
+plt.show()
 plt.savefig('{0}cl_plots/cl_fracdiff_error.pdf'.format(savefolder))
-'''
-
-
+#'''
 
 ending = time.time()
 print('Everything took: ', ending - beginning)

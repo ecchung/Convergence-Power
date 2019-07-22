@@ -9,8 +9,8 @@ mpl.rcParams.update({'font.size': 18})
 mpl.rcParams['lines.linewidth'] = 3
 color=itertools.cycle(['k','silver'])
 
-Cls1 = np.loadtxt('data/May21_matter2lens_WF_FDM_1.0_cut_ibarrier_iconc_fCls.csv')
-Cls = np.loadtxt('data/May21_matter2lens_WF_CDM_cut_ibarrier_iconc_fCls.csv')
+Cls1 = np.loadtxt('astro2020/data/May21_matter2lens_WF_FDM_1.0_cut_ibarrier_iconc_fCls.csv')
+Cls = np.loadtxt('astro2020/data/May21_matter2lens_WF_CDM_cut_ibarrier_iconc_fCls.csv')
 
 #cdm = interp1d(Cls[:,0],Cls[:,1],bounds_error=True)
 fdm = interp1d(Cls1[:,0],Cls1[:,1],bounds_error=True)
@@ -38,9 +38,9 @@ fsky = 0.5
 #plt.margins(0,0)
 
 for index in range(len(noises)):
-    ellBinEdges = np.load('data/190404_experiment_0.25arc_'+str(noises[index])+'uk_2000_reionKSZ_2.912603855229585sqdeg_lbin_edges_dl300.npy')
+    ellBinEdges = np.load('astro2020/data/190404_experiment_0.25arc_'+str(noises[index])+'uk_2000_reionKSZ_2.912603855229585sqdeg_lbin_edges_dl300.npy')
     ell  =  (ellBinEdges[1:] + ellBinEdges[:-1]) / 2
-    cov = np.load('data/190404_experiment_0.25arc_'+str(noises[index])+'uk_2000_reionKSZ_2.912603855229585sqdeg_covmat_dl300.npy')
+    cov = np.load('astro2020/data/190404_experiment_0.25arc_'+str(noises[index])+'uk_2000_reionKSZ_2.912603855229585sqdeg_covmat_dl300.npy')
     covDiag = cov.diagonal() * (2.912603855229585/41253.) / fsky
 
     # Calculating variance of bin data (weighted mean): 1/var = sum(1/var_i)
@@ -71,7 +71,7 @@ for index in range(len(noises)):
     ys = np.array(ys)
         
     #yerr = np.sqrt(cov.diagonal() * (2.91260385523/41253.) / 0.1)
-    (_,caps,eb)=ax1.errorbar(xs+shiftFactor,fdm(xs+shiftFactor),yerr=ys,ls='',ecolor=color.next(),capsize=5,label=label[index])
+    (_,caps,eb)=ax1.errorbar(xs+shiftFactor,fdm(xs+shiftFactor),yerr=ys,ls='',ecolor=next(color),capsize=5,label=label[index])
     for cap in caps:
         cap.set_markeredgewidth(2)
     eb[0].set_linestyle(ls[index])
@@ -105,7 +105,7 @@ ax2.set_xticklabels(ax2Xs)
 ax2.set_xlabel('$k$ (Mpc$^{-1}$)',size=20)
 
 #plt.show()
-plt.savefig('output/dm_errorbar_cmbhd_addaxis.pdf')
+plt.savefig('dm_errorbar_cmbhd_addaxis.pdf')
 
 
 
