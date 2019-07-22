@@ -97,6 +97,14 @@ DeltaChi2 = np.zeros(data_key.shape)
 clDMO = clBinned[base_index]
 for i, clBary in enumerate(clBinned):
     DeltaChi2[i] = sum(((clBary-clDMO)/sigma)**2)
+                        
+# Calculate delta chi squared using covmat inverse for each simulation
+DeltaChi2Inv = np.zeros(data_key.shape)
+clDMO = clBinned[base_index]
+for i in range(len(data_key)):
+    diff = clBinned[i] - clDMO
+    DeltaChi2Inv[i] = np.matmul(np.matmul(diff.T, covinv), diff)
+
     
 # Save values
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','clBinned'), 'w+') as fclbin:
@@ -107,13 +115,18 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','lMidBin'), 'w+') as flmb:
 
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','DeltaChi2'), 'w+') as fdc:
     np.savetxt(fdc, DeltaChi2)
+                                
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','DeltaChi2Inv'), 'w+') as fdci:
+    np.savetxt(fdci, DeltaChi2Inv)
+'''
+                                
 '''    
 # Import values
 clMeanBin = np.loadtxt('{0}cl_values/clBinned.txt'.format(savefolder))
 lMidBin   = np.loadtxt('{0}cl_values/lMidBin.txt'.format(savefolder))
 DeltaChi2 = np.loadtxt('{0}cl_values/DeltaChi2.txt'.format(savefolder))
 
-                                #--------DELTA CHI ANALYSIS--------# 
+                                #-----------SIGMA ANALYSIS---------# 
 clBary   = cl_baryon_list_lmax1e5
 clMidBin = np.zeros((len(data_key), len(lMidBin)))
 
@@ -124,22 +137,38 @@ for j, l in enumerate(lMidBin):
 
 sigmaFrac = sigma/clMidBin[base_index] # fractional sigma
 
-                                #-------PLOT WITH DELTA CHI-------# 
-plt.figure(7, figsize=(10,6))
-plt.clf()
+                                #------------S/N ANALYSIS----------# 
+SN_MidBin = np.zeros((len(data_key), len(sigma)))
+SN_MeanBin = np.zeros((len(data_key), len(sigma)))
 
+SN_MidBin = np.zeros(data_key.shape)
+SN_MeanBin = np.zeros(data_key.shape)
+
+for i in range(len(data_key)):
+    SN_MidBin[i] = np.sqrt(sum((clMidBin[i]/sigma) **2))
+    SN_MeanBin[i] = np.sqrt(sum((clMeanBin[i]/sigma) **2))
+    
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN_MidBin'), 'w+') as fmid:
+    np.savetxt(fmid, SN_MidBin)
+                        
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN_MeanBin'), 'w+') as fmean:
+    np.savetxt(fmean, SN_MeanBin)
+
+
+                                #----------PLOT WITH SIGMA---------# 
+plt.clf()
+plt.figure(7, figsize=(10,6))
 for i, datakey in enumerate(data_key): 
     plt.semilogx(lb, (clBary[i]-clBary[base_index])/clBary[base_index], color=colors[i], label=datakey)    
 
-plt.errorbar(lMidBin, clMidBin[base_index], yerr=sigmaFrac, ecolor='k')
+plt.errorbar(lMidBin[:100], clMidBin[0][:100], yerr=sigmaFrac[:100], ecolor='k', capsize=2)
 plt.title(r'Difference $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}$ BARYON')
 plt.ylabel(r'($C_\ell^{\kappa\kappa, bary}$ - $C_\ell^{\kappa\kappa, DMONLY}$)/$C_\ell^{\kappa\kappa, DMONLY}$')
 plt.xlabel(r'Multipole $\ell$')
 plt.grid(True)
 plt.legend(ncol=2, loc='upper left', prop={'size': 10})
-plt.show
-
-#plt.savefig('{0}cl_plots/cl_diff_lmax={1}.pdf'.format(savefolder, lmax))
+plt.savefig('{0}cl_plots/cl_fracdiff_error.pdf'.format(savefolder))
+'''
 
 
 
