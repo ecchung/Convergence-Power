@@ -231,7 +231,6 @@ R_vec = np.vectorize(R)
 # Calculate the integral
 
 # For DMONLY
-
 datakey = data_key[base_index]
 P_ratio_int = data_same[datakey]['P_ratio_interpolator']
 cl_base_ALLzmax = []
