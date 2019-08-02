@@ -19,7 +19,9 @@ from header.import_baryon_data import import_data, interpolate_ratio
 savefolder = 'outputs_jul17/'
 datafolder = 'baryonic_data'
 
-colors = np.array(['r', 'darkorange', 'yellow', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta','brown'])
+import matplotlib.cm as cm
+#color = cm.hsv(np.linspace(0, 1.7, len(xs)))
+colors = np.array(['r', 'darkorange', 'gold', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta','brown'])
 
 ######################################################################################################### 
 #                                     IMPORTING BARYONIC DATA                                           #
@@ -145,6 +147,7 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','xs'), 'w+') as fxs:
 mpl.rcParams.update({'font.family':'serif'})
 mpl.rcParams.update({'mathtext.fontset':'cm'})
 
+
 plt.clf()
 plt.figure(7, figsize=(10,6))
 for i, datakey in enumerate(data_key): 
@@ -162,22 +165,147 @@ plt.legend(ncol=2, loc='upper right', prop={'size': 10})
 #plt.show()
 plt.savefig('{0}cl_plots/cl_with_error.pdf'.format(savefolder))
 
+# ------------------------------------------------------------------------
 
+# Cl ratio plot with zoom in
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Rectangle
+from matplotlib.patches import Patch
+
+def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolor='None', alpha=0.4):
+    # Create list for all the error patches
+    errorboxes = []
+    # Loop over data points; create box from errors at each point
+    for x, y, xe, ye in zip(xdata, ydata, xerror.T, yerror.T):
+        rect = Rectangle((x - xe[0], y - ye[0]), xe.sum(), ye.sum())
+        errorboxes.append(rect)
+    # Create patch collection with specified colour/alpha
+    pc = PatchCollection(errorboxes, facecolor=facecolor, alpha=alpha, edgecolor=edgecolor)
+    # Add collection to axes
+    ax.add_collection(pc)
+    # Plot errorbars
+    artists = ax.errorbar(xdata, ydata, xerr=xerror, yerr=yerror, fmt='None', ecolor='None')
+
+    return artists
+
+plt.clf()
+fig, ax = plt.subplots(1, figsize=(11,8))
+for i, datakey in enumerate(data_key): 
+    ax.semilogx(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey)   # (99991,) --> bin 
+
+leg = ax.legend(ncol=2, loc='upper left', prop={'size': 10})
+
+
+axins = ax.inset_axes([0.09, 0.25, 0.6, 0.52])
+for i, datakey in enumerate(data_key): 
+    axins.plot(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey) 
+
+xdata = xs
+ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
+xerr  = SIGMA_F/SIGMA_F *500    # just set as bin
+xerr  = np.array([xerr,xerr])
+yerr  = SIGMA_F
+yerr  = np.array([yerr,yerr])
+
+artist = make_error_boxes(axins, xdata, ydata, xerr, yerr, facecolor='darkviolet')
+legend_elements = [Patch(facecolor='darkviolet', edgecolor='None', label='CMB-HD', alpha=0.4)]
+legin = ax.legend([artist],handles=legend_elements,loc='upper right', prop={'size': 10}, bbox_to_anchor=(0.6, 0.7, 0.3, 0.3))
+ax.add_artist(leg)
+ax.add_artist(legin)
+
+axins.set_xlim(10000, 37500)
+axins.set_ylim(0.78, 1.22)
+axins.grid(True)
+axins.tick_params(direction='inout', grid_alpha=0.5)
+
+ax.indicate_inset_zoom(axins)
+ax.tick_params(direction='inout', grid_alpha=0.5, labelsize=12, length=7)
+
+mark_inset(ax, axins, loc1=1, loc2=3, fc='none', ec='0.5')
+
+plt.title(r'Ratio of Baryonic and DMO $C_\ell^{\kappa\kappa}$', size=14)
+plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=17)
+plt.xlabel(r'$\ell$', size=16)
+plt.ylim(0.76)
+#plt.show()
+plt.savefig('{0}cl_plots/cl_ratio_zoomin_error.pdf'.format(savefolder))
+
+
+# ------------------------------------------------------------------------
+
+# Cl ratio plot with errors from l = 10000 to 40000
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Rectangle
+from matplotlib.patches import Patch
+
+def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolor='None', alpha=0.4):
+    # Create list for all the error patches
+    errorboxes = []
+    # Loop over data points; create box from errors at each point
+    for x, y, xe, ye in zip(xdata, ydata, xerror.T, yerror.T):
+        rect = Rectangle((x - xe[0], y - ye[0]), xe.sum(), ye.sum())
+        errorboxes.append(rect)
+    # Create patch collection with specified colour/alpha
+    pc = PatchCollection(errorboxes, facecolor=facecolor, alpha=alpha, edgecolor=edgecolor)
+    # Add collection to axes
+    ax.add_collection(pc)
+    
+    # Plot errorbars
+    artists = ax.errorbar(xdata, ydata, xerr=xerror, yerr=yerror, fmt='None', ecolor='None')
+    legend_elements = [Patch(facecolor=facecolor, edgecolor=edgecolor, label='CMB-HD', alpha=alpha)]
+    leg = ax.legend([artists],handles=legend_elements,loc='upper right', prop={'size': 10})
+    return artists, leg
+
+
+# Create figure and axes
+plt.clf()
+fig, ax = plt.subplots(1, figsize=(10,6))
+
+# Call function to create error boxes
+#
+
+for i, datakey in enumerate(data_key): 
+    ax.plot(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey) 
+
+leg1 = ax.legend(ncol=2, loc='upper left', prop={'size': 10})
+
+xdata = xs
+ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
+xerr  = SIGMA_F/SIGMA_F *500    # just set as bin
+xerr  = np.array([xerr,xerr])
+yerr  = SIGMA_F
+yerr  = np.array([yerr,yerr])
+
+artist, leg = make_error_boxes(ax, xdata, ydata, xerr, yerr, facecolor='darkviolet')
+
+ax.add_artist(leg1)
+ax.add_artist(leg)
+
+plt.xlim(9000,37500)
+plt.ylim(0.7, 1.3)
+plt.grid(True)
+
+plt.show()
+
+
+# ------------------------------------------------------------------------
 
 plt.clf()
 plt.figure(7, figsize=(10,6))
 for i, datakey in enumerate(data_key): 
-    plt.semilogx(lb, (clBary[i]-clBary[base_index])/clBary[base_index], color=colors[i], label=datakey)   # (99991,) --> bin 
-    plt.errorbar(xs, (BARY[i](xs)-BARY[base_index](xs))/BARY[base_index](xs), yerr=SIGMA_F, ecolor=colors[i], capsize=4, fmt='none', label='CMB-HD')            # (15,) --> bin
+    plt.semilogx(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey)   # (99991,) --> bin 
+    plt.errorbar(xs, BARY[i](xs)/BARY[base_index](xs), yerr=SIGMA_F, ecolor=colors[i], capsize=4, fmt='none', label='CMB-HD')            # (15,) --> bin
 
-plt.title(r'Difference $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}$ BARYON', size=20)
-plt.ylabel(r'($C_\ell^{\kappa\kappa, bary}$ - $C_\ell^{\kappa\kappa, DMONLY}$)/$C_\ell^{\kappa\kappa, DMONLY}$', size=20)
+plt.title(r'Ratio $C_\ell^{\kappa\kappa}$ DMONLY vs. $C_\ell^{\kappa\kappa}$ BARYON', size=20)
+plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMONLY}$', size=20)
 plt.xlabel(r'$\ell$', size=20)
 plt.xlim(8000,45000)
 plt.grid(True)
 plt.legend(ncol=2, loc='upper left', prop={'size': 10})
 #plt.show()
-plt.savefig('{0}cl_plots/cl_diff_with_error.pdf'.format(savefolder))
+plt.savefig('{0}cl_plots/cl_ratio_with_error.pdf'.format(savefolder))
 #'''
 
 ending = time.time()
