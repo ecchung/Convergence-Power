@@ -1,7 +1,7 @@
 Tolerance = 0.5%
 
 		kmax [h/Mpc]	zmax
-AGN			23.9		3.57
-NOSN		100.0		2.68
-REF			74.9		1.92
-WDENS		14.1		3.40
+AGN 	23.9 			3.57
+NOSN	100.0			2.68
+REF 	74.9 			1.92
+WDENS	14.1 			3.40
