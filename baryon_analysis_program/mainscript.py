@@ -142,6 +142,8 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','xs'), 'w+') as fxs:
     np.savetxt(fxs, xs)
 
 
+
+
 #'''
                                 #----------PLOT WITH ERROR---------# 
 mpl.rcParams.update({'font.family':'serif'})
@@ -187,15 +189,17 @@ def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolo
     ax.add_collection(pc)
     # Plot errorbars
     artists = ax.errorbar(xdata, ydata, xerr=xerror, yerr=yerror, fmt='None', ecolor='None')
-
     return artists
 
 plt.clf()
 fig, ax = plt.subplots(1, figsize=(11,8))
 for i, datakey in enumerate(data_key): 
-    ax.semilogx(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey)   # (99991,) --> bin 
+    label=datakey.replace('_L100N512','')
+    if i == base_index:
+        label='DMONLY (DMO)'
+    ax.semilogx(lb, clBary[i]/clBary[base_index], color=colors[i], label=label)   # (99991,) --> bin 
 
-leg = ax.legend(ncol=2, loc='upper left', prop={'size': 10})
+leg = ax.legend(ncol=2, loc='upper left', prop={'size': 11})
 
 
 axins = ax.inset_axes([0.09, 0.25, 0.6, 0.52])
@@ -211,26 +215,27 @@ yerr  = np.array([yerr,yerr])
 
 artist = make_error_boxes(axins, xdata, ydata, xerr, yerr, facecolor='darkviolet')
 legend_elements = [Patch(facecolor='darkviolet', edgecolor='None', label='CMB-HD', alpha=0.4)]
-legin = ax.legend([artist],handles=legend_elements,loc='upper right', prop={'size': 10}, bbox_to_anchor=(0.6, 0.7, 0.3, 0.3))
+legin = ax.legend([artist],handles=legend_elements,loc='upper right', prop={'size': 11}, bbox_to_anchor=(0.6, 0.7, 0.3, 0.3))
 ax.add_artist(leg)
 ax.add_artist(legin)
 
 axins.set_xlim(10000, 37500)
 axins.set_ylim(0.78, 1.22)
 axins.grid(True)
-axins.tick_params(direction='inout', grid_alpha=0.5)
+axins.tick_params(direction='inout', grid_alpha=0.5, labelsize=11)
 
 ax.indicate_inset_zoom(axins)
 ax.tick_params(direction='inout', grid_alpha=0.5, labelsize=12, length=7)
 
 mark_inset(ax, axins, loc1=1, loc2=3, fc='none', ec='0.5')
 
-plt.title(r'Ratio of Baryonic and DMO $C_\ell^{\kappa\kappa}$', size=14)
-plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=17)
-plt.xlabel(r'$\ell$', size=16)
+plt.title(r'Ratio of Baryonic and DMO $C_\ell^{\kappa\kappa}$', size=16)
+plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=18)
+plt.xlabel(r'$\ell$', size=17)
 plt.ylim(0.76)
 #plt.show()
-plt.savefig('{0}cl_plots/cl_ratio_zoomin_error.pdf'.format(savefolder))
+filename = savefolder + 'cl_plots/cl_ratio_zoomin_error2.pdf'
+plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
 
 
 # ------------------------------------------------------------------------

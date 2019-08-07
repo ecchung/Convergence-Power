@@ -35,16 +35,17 @@ base_index     = int(np.argwhere(data_key==base_key))
 data_same      = interpolate_ratio(data_key, data, base_index)
 z_same         = data_same[data_key[0]]['z']
 
+'''
 ######################################################################################################### 
-#                                          ZMAX ANALYSIS                                                #
+#                                        ZMAX ANALYSIS PLOT                                             #
 ######################################################################################################### 
 
 def R(ratio_int, k,z, zmax):
-    '''
+    """
     k -> (ndarray)
     z -> (ndarray)
     zmax -> (float)
-    '''
+    """
     if z<zmax:
         return ratio_int(k, z)
     else:
@@ -135,8 +136,104 @@ for n, datakey in enumerate(data_key):
     plt.ylim(ymin, ymax)
     #plt.show()
     plt.savefig(savefolder+'zmax_analysis/{0}-withErrorbar.pdf'.format(datakey))
+'''    
+
+######################################################################################################### 
+#                                      ZMAX ANALYSIS TOLERANCE                                          #
+######################################################################################################### 
+
+T = 0.5 #% tolerance
+zmax_tol = {}
+
+# Import errorbar stuff
+SIGMA_F = np.loadtxt(savefolder+'cl_values/SIGMA_F.txt')
+XS      = np.loadtxt(savefolder+'cl_values/xs.txt')
+clBary  = np.loadtxt(savefolder+'cl_values/cl_bary_list_lmax1e5.txt')
+lb      = np.loadtxt(savefolder+'cl_values/lb.txt')
+BARY    = [] # interpolated cl for all bary
+for clbary in clBary:
+    BARY.append(interpolate.interp1d(lb,clbary,bounds_error=True))
+
+
+
+def R(ratio_int, k,z, zmax):
+    """
+    k -> (ndarray)
+    z -> (ndarray)
+    zmax -> (float)
+    """
+    if z<zmax:
+        return ratio_int(k, z)
+    else:
+        return 1
+
+R_vec = np.vectorize(R)
+
+                
+nz     = 100
+cutoff = 514
+kmax   = 514.71854                     # largest k value from all simulations
+kmin   = 0.062831853                   # smallest k value from all simulations
+lmax   = 1e5
+
+Xs  = np.linspace(0, Xcmb, nz)
+zs  = results.redshift_at_comoving_radial_distance(Xs)
+
+dXs = (Xs[2:]-Xs[:-2])/2
+Xs  = Xs[1:-1]
+zs  = zs[1:-1]
+As  = get_a(zs)
+ws  = W(Xs, As, Xcmb)
+ls  = np.arange(2, lmax+1, dtype=np.float64)
+d   = np.ones(Xs.shape)
+
+# CHANGE
+#L = np.linspace(10, lmax+1, 800, dtype=np.float64)
+L = np.linspace(8000, 42000, 300, dtype=np.float64)
+ZMAX = np.arange(3.31, 3.41, 0.01) #np.flip(z_same[:10])
+ZMAX = np.append(ZMAX, z_same[-1])
+cl_ALLbary_zmax = np.zeros((len(data_key), len(ZMAX), len(L)))
+
+ind = [4] # [0, 1, 2, 4] AGN, NOSN, REF, WDENS
+
+# For each bary sim
+for n, datakey in enumerate(data_key):
+    print(datakey)
+    R_int = data_same[datakey]['R_interpolator']
     
+    if n in ind:
+        # For each zmax
+        for j, zmax in enumerate(ZMAX):
+            cl_bary_zmax = np.zeros(L.shape)
+            # For each l
+            for i, li in enumerate(L):
+                k = (li+0.5) / Xs
+                d[:] = 1
+                d[k>=kmax] = 0 # universal kmax
+                cl_bary_zmax[i] = np.dot(dXs, d * P_delta(zs, k, from_func='Weyl') * R_vec(R_int, k, zs, zmax) * ws**2 / Xs**2)
+            # Save for each zmax at nth bary sim
+            cl_ALLbary_zmax[n][j] = cl_bary_zmax
+
+
+cl = cl_ALLbary_zmax
+
+for n, datakey in enumerate(data_key):
+    key = datakey.replace('_L100N512','')
+    print('\n' + key)
+    zmax_tol[key] = []
+    cl_nocut = cl[n][-1]
+    flag = 0
     
+    if n in ind:
+        for j, zmax in enumerate(ZMAX[:-1]):
+            if flag == 0:
+                if max(abs((cl[n][j] - cl_nocut)/cl_nocut))*100 < T:
+                    kmax_tol[key].append(zmax)
+                    print(zmax)
+                    flag = 1 # already found the smallest within the tolerance
+                
+
+
 
 
 

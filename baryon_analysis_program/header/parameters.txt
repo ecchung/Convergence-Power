@@ -1,0 +1,16 @@
+List every parameter possible!
+
+lpa = 10
+H0    = 67.5            # Hubble constant today         (km/s/Mpc)
+H0c   = H0/c * 1000     # Hubble constant today         (1/Mpc)
+h     = H0/100          # H0 / 100 km/s /Mpc            (unitless)
+ombh2 = 0.022           # baryonic matter density       (unitless)
+omch2 = 0.12            # cold dark matter density      (unitless)
+omb   = ombh2 / h**2    # baryonic matter density fraction  (unitless)
+omc   = omch2 / h**2    # cold dark matter density fraction (unitless)
+omm   = omb + omc       # total matter density          (unitless)
+oml   = 1 - (omb + omc) # omega lambda                  (unitless)
+omk   = 0.0             # curvature parameter           (unitless)
+ns    = 0.965           # scalar spectral index
+maxkh   = 2000.
+npoints = 1000
