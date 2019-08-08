@@ -87,12 +87,15 @@ for clbary in clBary:
                                 #       FROM NAM NGUYEN'S CODE     #
                                 #----------------------------------#           
 xs,ys = [],[]
+xsEdges = [300] # first number of lBinEdges
 x,y = 0.,0.
 j = 0
 count = 0
 
 for i in range(len(covDiag)):
     if Lrange[j] < lMidBin[i]: # end of bin
+        print(Lrange[j], i, lMidBin[i], lBinEdges[i])
+        xsEdges.append(lBinEdges[i])
         if count != 0:
             xs.append(x/count)
             ys.append(1./np.sqrt(y))
@@ -106,9 +109,12 @@ for i in range(len(covDiag)):
 if count != 0:
     xs.append(x/count)
     ys.append(1./np.sqrt(y))
+    xsEdges.append(lBinEdges[-1])
 
 xs = np.array(xs)
 ys = np.array(ys) # y error
+xsLeft = xs - xsEdges[:-1]
+xsRight = xsEdges[1:] - xs
 
 
 
@@ -126,9 +132,10 @@ DCHI2 = np.array(DCHI2)
 
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN'), 'w+') as fs:
     np.savetxt(fs, SN)
+
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','DCHI2'), 'w+') as fdc:
     np.savetxt(fdc, DCHI2)
-    
+ 
 SIGMA_F = ys/BARY[base_index](xs)  # (15, ) --> bin # fractional sigma
 SIGMA = ys
 
@@ -208,8 +215,7 @@ for i, datakey in enumerate(data_key):
 
 xdata = xs
 ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
-xerr  = SIGMA_F/SIGMA_F *500    # just set as bin
-xerr  = np.array([xerr,xerr])
+xerr  = np.array([xsRight,xsLeft])
 yerr  = SIGMA_F
 yerr  = np.array([yerr,yerr])
 
@@ -233,7 +239,7 @@ plt.title(r'Ratio of Baryonic and DMO $C_\ell^{\kappa\kappa}$', size=16)
 plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=18)
 plt.xlabel(r'$\ell$', size=17)
 plt.ylim(0.76)
-#plt.show()
+plt.show()
 filename = savefolder + 'cl_plots/cl_ratio_zoomin_error2.pdf'
 plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
 
