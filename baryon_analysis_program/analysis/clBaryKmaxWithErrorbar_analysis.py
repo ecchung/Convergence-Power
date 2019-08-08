@@ -135,9 +135,10 @@ for n, datakey in enumerate(data_key):
     plt.ylim(ymin, ymax)
     #plt.show()
     plt.savefig(savefolder+'kmax_analysis/{0}-withErrorbar.pdf'.format(datakey))
-'''    
+''' 
+'''   
 ######################################################################################################### 
-#                                      KMAX ANALYSIS TOLERANCE                                          #
+#                                    KMAX ANALYSIS % TOLERANCE                                          #
 ######################################################################################################### 
 
 T = 0.5 #% tolerance
@@ -155,11 +156,11 @@ for clbary in clBary:
 
 
 def R(ratio_int, k,z, Kmax):
-    '''
+    """
     k -> (ndarray)
     z -> (ndarray)
     Kmax -> (float)
-    '''
+    """
     if k<=Kmax:
         return ratio_int(k, z)
     else:
@@ -229,8 +230,106 @@ for n, datakey in enumerate(data_key):
                     kmax_tol[key].append(Kmax)
                     print(Kmax)
                     flag = 1 # already found the smallest within the tolerance
-                
+'''
 
+######################################################################################################### 
+#                                   KMAX ANALYSIS CMB-HD TOLERANCE                                      #
+######################################################################################################### 
+
+kmax_cmbHD = {}
+
+# Import errorbar stuff
+SIGMA   = np.loadtxt(savefolder+'cl_values/SIGMA.txt')
+XERR    = np.loadtxt(savefolder+'cl_values/XERR.txt')
+XEDGES  = np.loadtxt(savefolder+'cl_values/XEDGES.txt')
+XS      = np.loadtxt(savefolder+'cl_values/xs.txt')
+clBary  = np.loadtxt(savefolder+'cl_values/cl_bary_list_lmax1e5.txt')
+lb      = np.loadtxt(savefolder+'cl_values/lb.txt')
+BARY    = [] # interpolated cl for all bary
+for clbary in clBary:
+    BARY.append(interpolate.interp1d(lb,clbary,bounds_error=True))
+
+
+def R(ratio_int, k,z, Kmax):
+    """
+    k -> (ndarray)
+    z -> (ndarray)
+    Kmax -> (float)
+    """
+    if k<=Kmax:
+        return ratio_int(k, z)
+    else:
+        return 1.
+
+R_vec = np.vectorize(R)
+
+                
+nz     = 100
+cutoff = 514
+kmax   = 514.71854                     # largest k value from all simulations
+kmin   = 0.062831853                   # smallest k value from all simulations
+lmax   = 1e5
+
+Xs  = np.linspace(0, Xcmb, nz)
+zs  = results.redshift_at_comoving_radial_distance(Xs)
+
+dXs = (Xs[2:]-Xs[:-2])/2
+Xs  = Xs[1:-1]
+zs  = zs[1:-1]
+As  = get_a(zs)
+ws  = W(Xs, As, Xcmb)
+ls  = np.arange(2, lmax+1, dtype=np.float64)
+d   = np.ones(Xs.shape)
+
+# CHANGE
+L               = np.linspace(10000, 39000, 400, dtype=np.float64)
+K_max           = np.arange(8.0, 9.1, .1)
+K_max           = np.append(K_max, kmax)
+cl_ALLbary_kmax = np.zeros((len(data_key), len(K_max), len(L)))
+YERR            = np.ones(L.shape) # make array of yerrors that correspond to the ell that Cl takes
+for i in range(len(SIGMA)-1, -1, -1):
+    YERR[L<XEDGES[i+1]] = SIGMA[i]
+
+ind = [4]# [0, 1, 2, 4] AGN, NOSN, REF, WDENS
+
+# For each bary sim
+for n, datakey in enumerate(data_key):
+    print(datakey)
+    R_int = data_same[datakey]['R_interpolator']
+    
+    if n in ind:
+        # For each K_max
+        for j, Kmax in enumerate(K_max):
+            cl_bary_kmax = np.zeros(L.shape)
+            # For each l
+            for i, li in enumerate(L):
+                k = (li+0.5) / Xs
+                d[:] = 1
+                d[k>=kmax] = 0 # universal kmax
+                cl_bary_kmax[i] = np.dot(dXs, d * P_delta(zs, k, from_func='Weyl') * R_vec(R_int, k, zs, Kmax) * ws**2 / Xs**2)
+                    
+            # Save for each K_max at nth bary sim
+            cl_ALLbary_kmax[n][j] = cl_bary_kmax
+
+
+cl = cl_ALLbary_kmax
+
+for n, datakey in enumerate(data_key):
+    key = datakey.replace('_L100N512','')
+    print('\n' + key)
+    kmax_cmbHD[key] = []
+    cl_nocut = cl[n][-1]
+    flag = 0
+    
+    if n in ind:
+        for j, Kmax in enumerate(K_max[:-1]):
+            if flag == 0:
+                if False in (abs(cl[n][j] - cl_nocut) < YERR):
+                    pass
+                else:
+                    kmax_cmbHD[key].append(Kmax)
+                    print(Kmax)
+                    flag = 1 # already found the smallest within the tolerance
 
         
                    

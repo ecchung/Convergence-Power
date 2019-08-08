@@ -113,8 +113,8 @@ if count != 0:
 
 xs = np.array(xs)
 ys = np.array(ys) # y error
-xsLeft = xs - xsEdges[:-1]
-xsRight = xsEdges[1:] - xs
+xsLeft = xs - xsEdges[:-1] # for x error
+xsRight = xsEdges[1:] - xs # actually same as xsLeft
 
 
 
@@ -137,7 +137,9 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','DCHI2'), 'w+') as fdc:
     np.savetxt(fdc, DCHI2)
  
 SIGMA_F = ys/BARY[base_index](xs)  # (15, ) --> bin # fractional sigma
-SIGMA = ys
+SIGMA   = ys
+XERR    = xsLeft
+XEDGES  = xsEdges
 
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','SIGMA_F'), 'w+') as fsigf:
     np.savetxt(fsigf, SIGMA_F)
@@ -147,6 +149,12 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','SIGMA'), 'w+') as fsig:
 
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','xs'), 'w+') as fxs:
     np.savetxt(fxs, xs)
+
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','XERR'), 'w+') as fxerr:
+    np.savetxt(fxerr, XERR)
+
+with open('{0}{1}.txt'.format(savefolder+'cl_values/','XEDGES'), 'w+') as fxed:
+    np.savetxt(fxed, XEDGES)
 
 
 
@@ -213,7 +221,7 @@ axins = ax.inset_axes([0.09, 0.25, 0.6, 0.52])
 for i, datakey in enumerate(data_key): 
     axins.plot(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey) 
 
-xdata = xs
+xdata = XERR
 ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
 xerr  = np.array([xsRight,xsLeft])
 yerr  = SIGMA_F
