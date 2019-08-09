@@ -117,6 +117,7 @@ for clbary in clBary:
                                 #--------FANCY BINNED ERRORS-------# 
                                 #       FROM NAM NGUYEN'S CODE     #
                                 #----------------------------------#           
+
 xs,ys = [],[]
 xsEdges = [300] # first number of lBinEdges
 x,y = 0.,0.
@@ -195,7 +196,7 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','XEDGES'), 'w+') as fxed:
 mpl.rcParams.update({'font.family':'serif'})
 mpl.rcParams.update({'mathtext.fontset':'cm'})
 
-color = cm.hsv(np.linspace(0, 1.2, len(data_key)+2))
+color = cm.hsv(np.linspace(0, 1.1, len(data_key)+4))
 plt.clf()
 plt.figure(7, figsize=(10,6))
 for i, datakey in enumerate(OWLS_datakey): 
@@ -203,15 +204,23 @@ for i, datakey in enumerate(OWLS_datakey):
     #plt.errorbar(xs, BARY[i](xs), yerr=SIGMA, ecolor=colors[i], capsize=4, fmt='none')            # (15,) --> bin
 
 i+=1
-plt.semilogx(lb, cl_Hz_list[0], color=color[i], label=Hz_datakey[0], ls='--')
-plt.semilogy(l, cl_camb, color='k', label='cl CAMB no baryon', ls='-.')
+plt.semilogx(lb, cl_Hz_list[1], color=color[i], ls='--', label='Hz-DM')
+i+=1
+plt.semilogx(lb, cl_Hz_list[0], color=color[i], ls='--', label='Hz-AGN maybe')
+i+=1
+plt.semilogx(lb, cl_Hz_nofix_list[0], color=color[i], ls='--', label='Hz-AGN nofix')
+i+=1
+plt.semilogx(lb, cl_Hz_fix_list[0], color=color[i], ls='--', label='Hz-AGN fix')
+
+
+plt.semilogy(l, cl_camb, color='k', label='cl CAMB no baryon')
 plt.title(r'$C_\ell^{\kappa\kappa}$ BARYON', size=20)
 plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$', size=20)
 plt.xlabel(r'$\ell$', size=20)
 plt.xlim(5000, 1e5)
 plt.ylim(2e-12,1e-9)
 plt.grid(True)
-plt.legend(ncol=2, loc='upper right', prop={'size': 10})
+plt.legend(ncol=2, loc='upper right', prop={'size': 9.5})
 #plt.show()
 plt.savefig('{0}cl_plots/cl_OWLS_Hz.pdf'.format(savefolder))
 
@@ -240,22 +249,35 @@ def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolo
     artists = ax.errorbar(xdata, ydata, xerr=xerror, yerr=yerror, fmt='None', ecolor='None')
     return artists
 
+color = cm.hsv(np.linspace(0, 1.2, len(data_key)+4))
+
 plt.clf()
 fig, ax = plt.subplots(1, figsize=(11,8))
 for i, datakey in enumerate(OWLS_datakey): 
     label=datakey.replace('_L100N512','')
     if i == base_index:
         label='DMONLY (DMO)'
-    ax.semilogx(lb, clBary[i]/clBary[base_index], color=colors[i], label=label)   # (99991,) --> bin 
+    ax.semilogx(lb, clBary[i]/clBary[base_index], color=color[i], label=label)   # (99991,) --> bin 
 
-ax.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color='deeppink', label='Hz-AGN', ls='--')
+i+=1
+ax.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color=color[i], label='Hz-AGN maybe', ls='--')
+i+=1
+ax.semilogx(lb, cl_Hz_nofix_list[0]/cl_Hz_nofix_list[1], color=color[i], label='Hz-AGN nofix', ls='--')
+i+=1
+ax.semilogx(lb, cl_Hz_fix_list[0]/cl_Hz_fix_list[1], color=color[i], label='Hz-AGN fix', ls='--')
+
 leg = ax.legend(ncol=3, loc='upper left', prop={'size': 11})
 
 axins = ax.inset_axes([0.09, 0.25, 0.6, 0.52])
 for i, datakey in enumerate(OWLS_datakey): 
     axins.plot(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey) 
 
-axins.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color='deeppink', label='Hz-AGN', ls='--')
+i+=1
+axins.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color=color[i], label='Hz-AGN maybe', ls='--')
+i+=1
+axins.semilogx(lb, cl_Hz_nofix_list[0]/cl_Hz_nofix_list[1], color=color[i], label='Hz-AGN nofix', ls='--')
+i+=1
+axins.semilogx(lb, cl_Hz_fix_list[0]/cl_Hz_fix_list[1], color=color[i], label='Hz-AGN fix', ls='--')
 
 xdata = xs
 ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
