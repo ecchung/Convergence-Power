@@ -21,15 +21,38 @@ datafolder = 'baryonic_data'
 
 import matplotlib.cm as cm
 #color = cm.hsv(np.linspace(0, 1.7, len(xs)))
-colors = np.array(['r', 'darkorange', 'gold', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'magenta','brown'])
+colors = np.array(['r', 'darkorange', 'gold', 'limegreen', 'forestgreen','deepskyblue', 'blue','darkviolet', 'fuchsia','brown'])
 
 ######################################################################################################### 
 #                                     IMPORTING BARYONIC DATA                                           #
 ######################################################################################################### 
+import copy
+
 data_key, data = import_data()
-base_key = 'DMONLY_L100N512'
-base_index = int(np.argwhere(data_key==base_key))
-data_same = interpolate_ratio(data_key, data, base_index)
+
+OWLS_base_key  = 'DMONLY_L100N512'
+OWLS_base_index= int(np.argwhere(data_key==OWLS_base_key)) # OWLS
+OWLS_datakey = []
+Hz_datakey = []
+for i, key in enumerate(data_key):
+    if 'Hz' in key:
+        Hz_datakey.append(key)
+    else:
+        OWLS_datakey.append(key)
+
+OWLS_datakey = np.array(OWLS_datakey)
+OWLS_data    = interpolate_ratio(OWLS_datakey, data, OWLS_base_index) #for OWLS only
+data_same    = OWLS_data
+base_index   = OWLS_base_index
+
+Hz_datakey    = np.array(Hz_datakey)
+Hz_base_key   = 'Hz-DM'
+Hz_base_index = int(np.argwhere(data_key==Hz_base_key))   # Horizon
+Hz_data, Hz_data_fix, Hz_data_nofix = copy.deepcopy(data),copy.deepcopy(data),copy.deepcopy(data)
+
+Hz_data_nofix = interpolate_ratio_Hz(data_key, Hz_data_nofix, fix=False)
+Hz_data       = interpolate_ratio_Hz(data_key, Hz_data, fix='Maybe')
+Hz_data_fix   = interpolate_ratio_Hz(data_key, Hz_data_fix, fix=True)
 
 '''
 ######################################################################################################### 
@@ -44,7 +67,9 @@ cl_delta = CAMB_Delta(save=True, savefolder=savefolder+'cl_values/', savename='c
 nz = 100
 lmax = 1e5
 dl = 1
-cl_baryon_list = calc_cl_bary(data_key, data_same, base_index, lmax, dl, nz, save=True, savefolder=savefolder+'cl_values/', savename='cl_bary_list_lmax1e5', R_int=True)
+cl_OWLS_list = GetBaryonLensingPower(OWLS_datakey, OWLS_data, OWLS_base_index, lmax, dl, nz, which_sim='OWLS', save=True, savefolder=savefolder+'cl_values/', savename='cl_bary_list_lmax1e5')
+cl_Hz_list = GetBaryonLensingPower(Hz_datakey, Hz_data, Hz_base_index, lmax, dl, nz, which_sim='Hz', save=True, savefolder=savefolder+'cl_values/', savename='cl_Hz_list_lmax1e5')
+
 '''
 
 ######################################################################################################### 
@@ -59,6 +84,7 @@ l        = np.loadtxt('{0}cl_values/l.txt'.format(savefolder))  # currently rang
                                 #-----------BARYONIC CL-----------# 
 cl_baryon_list         = np.loadtxt('{0}cl_values/cl_bary_list.txt'.format(savefolder))
 cl_baryon_list_lmax1e5 = np.loadtxt('{0}cl_values/cl_bary_list_lmax1e5.txt'.format(savefolder))
+cl_Hz_list             = np.loadtxt('{0}cl_values/cl_Hz_list_lmax1e5.txt'.format(savefolder))
 lb                     = np.loadtxt('{0}cl_values/lb.txt'.format(savefolder))
 
 
@@ -135,7 +161,7 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','SN'), 'w+') as fs:
 
 with open('{0}{1}.txt'.format(savefolder+'cl_values/','DCHI2'), 'w+') as fdc:
     np.savetxt(fdc, DCHI2)
- 
+
 SIGMA_F = ys/BARY[base_index](xs)  # (15, ) --> bin # fractional sigma
 SIGMA   = ys
 XERR    = xsLeft
@@ -164,23 +190,25 @@ with open('{0}{1}.txt'.format(savefolder+'cl_values/','XEDGES'), 'w+') as fxed:
 mpl.rcParams.update({'font.family':'serif'})
 mpl.rcParams.update({'mathtext.fontset':'cm'})
 
-
+color = cm.hsv(np.linspace(0, 1.2, len(data_key)+2))
 plt.clf()
 plt.figure(7, figsize=(10,6))
-for i, datakey in enumerate(data_key): 
-    plt.semilogy(lb, clBary[i], color=colors[i], label=datakey)   # (99991,) --> bin 
-    plt.errorbar(xs, BARY[i](xs), yerr=SIGMA, ecolor=colors[i], capsize=4, fmt='none')            # (15,) --> bin
+for i, datakey in enumerate(OWLS_datakey): 
+    plt.semilogx(lb, clBary[i], color=color[i], label=datakey)   # (99991,) --> bin 
+    #plt.errorbar(xs, BARY[i](xs), yerr=SIGMA, ecolor=colors[i], capsize=4, fmt='none')            # (15,) --> bin
 
-plt.semilogy(l, cl_camb, color='k', label='cl CAMB no baryon')
+i+=1
+plt.semilogx(lb, cl_Hz_list[0], color=color[i], label=Hz_datakey[0], ls='--')
+plt.semilogy(l, cl_camb, color='k', label='cl CAMB no baryon', ls='-.')
 plt.title(r'$C_\ell^{\kappa\kappa}$ BARYON', size=20)
 plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$', size=20)
 plt.xlabel(r'$\ell$', size=20)
-plt.xlim(10000,38000)
-plt.ylim(1.3e-11,2.2e-10)
+plt.xlim(5000, 1e5)
+plt.ylim(2e-12,1e-9)
 plt.grid(True)
 plt.legend(ncol=2, loc='upper right', prop={'size': 10})
 #plt.show()
-plt.savefig('{0}cl_plots/cl_with_error.pdf'.format(savefolder))
+plt.savefig('{0}cl_plots/cl_OWLS_Hz.pdf'.format(savefolder))
 
 # ------------------------------------------------------------------------
 
@@ -190,8 +218,9 @@ from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 from matplotlib.patches import Patch
+alpha = 0.3
 
-def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolor='None', alpha=0.4):
+def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolor='None', alpha=alpha):
     # Create list for all the error patches
     errorboxes = []
     # Loop over data points; create box from errors at each point
@@ -208,27 +237,29 @@ def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolo
 
 plt.clf()
 fig, ax = plt.subplots(1, figsize=(11,8))
-for i, datakey in enumerate(data_key): 
+for i, datakey in enumerate(OWLS_datakey): 
     label=datakey.replace('_L100N512','')
     if i == base_index:
         label='DMONLY (DMO)'
     ax.semilogx(lb, clBary[i]/clBary[base_index], color=colors[i], label=label)   # (99991,) --> bin 
 
-leg = ax.legend(ncol=2, loc='upper left', prop={'size': 11})
-
+ax.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color='deeppink', label='Hz-AGN', ls='--')
+leg = ax.legend(ncol=3, loc='upper left', prop={'size': 11})
 
 axins = ax.inset_axes([0.09, 0.25, 0.6, 0.52])
-for i, datakey in enumerate(data_key): 
+for i, datakey in enumerate(OWLS_datakey): 
     axins.plot(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey) 
 
-xdata = XERR
+axins.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color='deeppink', label='Hz-AGN', ls='--')
+
+xdata = xs
 ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
 xerr  = np.array([xsRight,xsLeft])
 yerr  = SIGMA_F
 yerr  = np.array([yerr,yerr])
 
 artist = make_error_boxes(axins, xdata, ydata, xerr, yerr, facecolor='darkviolet')
-legend_elements = [Patch(facecolor='darkviolet', edgecolor='None', label='CMB-HD', alpha=0.4)]
+legend_elements = [Patch(facecolor='darkviolet', edgecolor='None', label='CMB-HD', alpha=alpha)]
 legin = ax.legend([artist],handles=legend_elements,loc='upper right', prop={'size': 11}, bbox_to_anchor=(0.6, 0.7, 0.3, 0.3))
 ax.add_artist(leg)
 ax.add_artist(legin)
@@ -247,66 +278,9 @@ plt.title(r'Ratio of Baryonic and DMO $C_\ell^{\kappa\kappa}$', size=16)
 plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=18)
 plt.xlabel(r'$\ell$', size=17)
 plt.ylim(0.76)
-plt.show()
+#plt.show()
 filename = savefolder + 'cl_plots/cl_ratio_zoomin_error2.pdf'
 plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
-
-
-# ------------------------------------------------------------------------
-
-# Cl ratio plot with errors from l = 10000 to 40000
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Rectangle
-from matplotlib.patches import Patch
-
-def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolor='None', alpha=0.4):
-    # Create list for all the error patches
-    errorboxes = []
-    # Loop over data points; create box from errors at each point
-    for x, y, xe, ye in zip(xdata, ydata, xerror.T, yerror.T):
-        rect = Rectangle((x - xe[0], y - ye[0]), xe.sum(), ye.sum())
-        errorboxes.append(rect)
-    # Create patch collection with specified colour/alpha
-    pc = PatchCollection(errorboxes, facecolor=facecolor, alpha=alpha, edgecolor=edgecolor)
-    # Add collection to axes
-    ax.add_collection(pc)
-    
-    # Plot errorbars
-    artists = ax.errorbar(xdata, ydata, xerr=xerror, yerr=yerror, fmt='None', ecolor='None')
-    legend_elements = [Patch(facecolor=facecolor, edgecolor=edgecolor, label='CMB-HD', alpha=alpha)]
-    leg = ax.legend([artists],handles=legend_elements,loc='upper right', prop={'size': 10})
-    return artists, leg
-
-
-# Create figure and axes
-plt.clf()
-fig, ax = plt.subplots(1, figsize=(10,6))
-
-# Call function to create error boxes
-#
-
-for i, datakey in enumerate(data_key): 
-    ax.plot(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey) 
-
-leg1 = ax.legend(ncol=2, loc='upper left', prop={'size': 10})
-
-xdata = xs
-ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
-xerr  = SIGMA_F/SIGMA_F *500    # just set as bin
-xerr  = np.array([xerr,xerr])
-yerr  = SIGMA_F
-yerr  = np.array([yerr,yerr])
-
-artist, leg = make_error_boxes(ax, xdata, ydata, xerr, yerr, facecolor='darkviolet')
-
-ax.add_artist(leg1)
-ax.add_artist(leg)
-
-plt.xlim(9000,37500)
-plt.ylim(0.7, 1.3)
-plt.grid(True)
-
-plt.show()
 
 
 # ------------------------------------------------------------------------
@@ -325,7 +299,31 @@ plt.grid(True)
 plt.legend(ncol=2, loc='upper left', prop={'size': 10})
 #plt.show()
 plt.savefig('{0}cl_plots/cl_ratio_with_error.pdf'.format(savefolder))
-#'''
 
+
+# ------------------------------------------------------------------------
+plt.clf()
+plt.figure(7, figsize=(10,6))
+zlist = Hz_data['Hz-AGN']['z']
+k = Hz_data['Hz-AGN']['k']
+color = cm.hsv(np.linspace(0, 0.9, len(zlist)))
+
+
+for i, z in enumerate(zlist[:5]):
+    plt.semilogx(k, Hz_data_fix['Hz-AGN']['R_interpolator'](k,z) , color=colors[i], label='z = ' + str(np.around(z, decimals=2)) + ' fix')
+    plt.semilogx(k, Hz_data['Hz-AGN']['R_interpolator'](k,z) , color=colors[i+5], ls='-.',label='z = ' + str(np.around(z, decimals=2)) + ' maybe fix')
+    plt.semilogx(k, Hz_data_nofix['Hz-AGN']['R_interpolator'](k,z) , color=color[i], ls='dotted',label='z = ' + str(np.around(z, decimals=2)) + ' nofix')
+
+plt.title('Horizon Ratio', size=20)
+plt.ylabel(r'$P_{AGN}$/$P_{DM}$', size=20)
+plt.xlabel(r'$k$ [$h/Mpc$]', size=20)
+plt.legend(ncol=3)
+plt.xlim(k[0], 1.4)
+plt.ylim(0.970, 1.025)
+plt.grid(True)
+#plt.show()
+plt.savefig('{0}cl_plots/pk_Hz.pdf'.format(savefolder))
+
+#'''
 ending = time.time()
 print('Everything took: ', ending - beginning)

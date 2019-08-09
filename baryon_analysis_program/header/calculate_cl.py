@@ -186,16 +186,21 @@ def CAMB_Delta(save=False, savefolder=None, savename=None):
 #                                    CALCULATING BARYONIC CL VALUES                                     #
 ######################################################################################################### 
 
-def calc_cl_bary(data_key, data, base_index, lmax, dl, nz, save=False, savefolder=None, savename=None, R_int=True):
+def GetBaryonLensingPower(data_key, data, base_index, lmax, dl, nz, which_sim='OWLS', save=False, savefolder=None, savename=None):
     '''
     Make sure that if R_int == True, data is data_same
+    which_sim takes only 'OWLS' or 'Hz'
     '''
     
     Xb  = np.linspace(0, Xcmb, nz)
     zb  = results.redshift_at_comoving_radial_distance(Xb)
-    kmax= 514.71854     # largest k value from all simulations
-    kmin= 0.062831853   # smallest k value from all simulations
-    
+    if which_sim == 'OWLS':
+        kmax = 514.71854     # largest k value from all simulations
+        kmin = 0.062831853   # smallest k value from all simulations
+    elif which_sim == 'Hz':
+        kmax = 32.107
+        kmin = 0.07885
+        
     dXb = (Xb[2:]-Xb[:-2])/2
     Xb  = Xb[1:-1]
     zb  = zb[1:-1]
@@ -209,31 +214,16 @@ def calc_cl_bary(data_key, data, base_index, lmax, dl, nz, save=False, savefolde
     
     # Calculate the integral
     # Use R_interpolator
-    if R_int == True: 
-        for j, datakey in enumerate(data_key):
-            print(j, datakey)
-            P_ratio_int = data[datakey]['R_interpolator']
-            cl_kappa_bary = np.zeros(lb.shape)
-            for i, li in enumerate(lb):
-                k = (li+0.5) / Xb
-                d[:] = 1
-                d[k>=kmax] = 0
-                cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal(np.flip(P_ratio_int(k, zb), axis=1)) * wb**2 / Xb**2) 
-            cl_baryon_list.append(cl_kappa_bary)
-            
-    # Don't use R_interpolator
-    elif R_int == False: 
-        for j, datakey in enumerate(data_key):
-            bary_P_int = data[datakey]['P_interpolator']
-            base_P_int = data[data_key[base_index]]['P_interpolator']
-            cl_kappa_bary = np.zeros(lb.shape)
-            for i, li in enumerate(lb):
-                k = (li+0.5) / Xb
-                d[:] = 1
-                d[k>=kmax] = 0
-                cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal((np.flip(bary_P_int(k, zb), axis=1)/np.flip(base_P_int(k, zb))) * wb**2 / Xb**2))
-            cl_baryon_list.append(cl_kappa_bary)
-    
+    for j, datakey in enumerate(data_key):
+        print(j, datakey)
+        P_ratio_int = data[datakey]['R_interpolator']
+        cl_kappa_bary = np.zeros(lb.shape)
+        for i, li in enumerate(lb):
+            k = (li+0.5) / Xb
+            d[:] = 1
+            d[k>=kmax] = 0
+            cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal(np.flip(P_ratio_int(k, zb), axis=1)) * wb**2 / Xb**2) 
+        cl_baryon_list.append(cl_kappa_bary)
     
     if save==True:
         if type(savefolder)!=str:
@@ -249,7 +239,6 @@ def calc_cl_bary(data_key, data, base_index, lmax, dl, nz, save=False, savefolde
                 np.savetxt(flb, lb)
             with open('{0}/data_key.txt'.format(savefolder), 'w+') as fdk:
                         np.savetxt(fdk, data_key, fmt='%s')
-                        
-            
-                        
+    
     return cl_baryon_list
+
