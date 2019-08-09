@@ -13,7 +13,7 @@ import scipy.integrate as integrate
 from scipy import interpolate
 from numpy.linalg import inv
 from header.CAMB_header import *
-from header.calculate_cl import CAMB_auto, CAMB_Weyl, CAMB_Delta, P_delta, calc_cl_bary
+from header.calculate_cl import CAMB_auto, CAMB_Weyl, CAMB_Delta, P_delta, GetBaryonLensingPower
 from header.import_baryon_data import import_data, interpolate_ratio
 
 savefolder = 'outputs_jul17/'
@@ -69,6 +69,8 @@ lmax = 1e5
 dl = 1
 cl_OWLS_list = GetBaryonLensingPower(OWLS_datakey, OWLS_data, OWLS_base_index, lmax, dl, nz, which_sim='OWLS', save=True, savefolder=savefolder+'cl_values/', savename='cl_bary_list_lmax1e5')
 cl_Hz_list = GetBaryonLensingPower(Hz_datakey, Hz_data, Hz_base_index, lmax, dl, nz, which_sim='Hz', save=True, savefolder=savefolder+'cl_values/', savename='cl_Hz_list_lmax1e5')
+cl_Hz_nofix_list = GetBaryonLensingPower(Hz_datakey, Hz_data_nofix, Hz_base_index, lmax, dl, nz, which_sim='Hz', save=True, savefolder=savefolder+'cl_values/', savename='cl_Hz_nofix_list_lmax1e5')
+cl_Hz_fix_list = GetBaryonLensingPower(Hz_datakey, Hz_data_fix, Hz_base_index, lmax, dl, nz, which_sim='Hz', save=True, savefolder=savefolder+'cl_values/', savename='cl_Hz_fix_list_lmax1e5')
 
 '''
 
@@ -85,6 +87,9 @@ l        = np.loadtxt('{0}cl_values/l.txt'.format(savefolder))  # currently rang
 cl_baryon_list         = np.loadtxt('{0}cl_values/cl_bary_list.txt'.format(savefolder))
 cl_baryon_list_lmax1e5 = np.loadtxt('{0}cl_values/cl_bary_list_lmax1e5.txt'.format(savefolder))
 cl_Hz_list             = np.loadtxt('{0}cl_values/cl_Hz_list_lmax1e5.txt'.format(savefolder))
+cl_Hz_nofix_list       = np.loadtxt('{0}cl_values/cl_Hz_nofix_list_lmax1e5.txt'.format(savefolder))
+cl_Hz_fix_list         = np.loadtxt('{0}cl_values/cl_Hz_fix_list_lmax1e5.txt'.format(savefolder))
+
 lb                     = np.loadtxt('{0}cl_values/lb.txt'.format(savefolder))
 
 
