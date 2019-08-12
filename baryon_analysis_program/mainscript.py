@@ -250,34 +250,47 @@ def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='red', edgecolo
     return artists
 
 color = cm.hsv(np.linspace(0, 1.2, len(data_key)+4))
+color = cm.hsv(np.linspace(0, 1.0, len(data_key)))
+
+ind = [0,1,2,4,7,10]
 
 plt.clf()
-fig, ax = plt.subplots(1, figsize=(11,8))
-for i, datakey in enumerate(OWLS_datakey): 
-    label=datakey.replace('_L100N512','')
-    if i == base_index:
-        label='DMONLY (DMO)'
-    ax.semilogx(lb, clBary[i]/clBary[base_index], color=color[i], label=label)   # (99991,) --> bin 
+fig, ax = plt.subplots(1, figsize=(11,7))
+for i, datakey in enumerate(data_key): 
+    if i in ind:
+        if 'Hz' in datakey:
+            ax.semilogx(lb, cl_Hz_nofix_list[0]/cl_Hz_nofix_list[1], color=color[i], label='Hz-AGN', ls='--')
+        else:
+            label=datakey.replace('_L100N512','')
+            if i == base_index:
+                label='DMONLY (DMO)'
+            ax.semilogx(lb, clBary[i]/clBary[base_index], color=color[i], label=label)
 
-i+=1
-ax.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color=color[i], label='Hz-AGN maybe', ls='--')
-i+=1
-ax.semilogx(lb, cl_Hz_nofix_list[0]/cl_Hz_nofix_list[1], color=color[i], label='Hz-AGN nofix', ls='--')
-i+=1
-ax.semilogx(lb, cl_Hz_fix_list[0]/cl_Hz_fix_list[1], color=color[i], label='Hz-AGN fix', ls='--')
+#i+=1
+#ax.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color=color[i], label='Hz-AGN', ls='--')
+#i+=1
+#ax.semilogx(lb, cl_Hz_nofix_list[0]/cl_Hz_nofix_list[1], color=color[i], label='Hz-AGN', ls='--')
+#i+=1
+#ax.semilogx(lb, cl_Hz_fix_list[0]/cl_Hz_fix_list[1], color=color[i], label='Hz-AGN fix', ls='--')
 
 leg = ax.legend(ncol=3, loc='upper left', prop={'size': 11})
 
-axins = ax.inset_axes([0.09, 0.25, 0.6, 0.52])
-for i, datakey in enumerate(OWLS_datakey): 
-    axins.plot(lb, clBary[i]/clBary[base_index], color=colors[i], label=datakey) 
+# Zoomed plot
+#axins = ax.inset_axes([0.09, 0.25, 0.6, 0.52])
+axins = ax.inset_axes([0.09, 0.28, 0.6, 0.57])
+for i, datakey in enumerate(data_key): 
+    if i in ind:
+        if 'Hz' in datakey:
+            axins.plot(lb, cl_Hz_nofix_list[0]/cl_Hz_nofix_list[1], color=color[i], label='Hz-AGN', ls='--')
+        else:
+            axins.plot(lb, clBary[i]/clBary[base_index], color=color[i], label=datakey) 
 
-i+=1
-axins.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color=color[i], label='Hz-AGN maybe', ls='--')
-i+=1
-axins.semilogx(lb, cl_Hz_nofix_list[0]/cl_Hz_nofix_list[1], color=color[i], label='Hz-AGN nofix', ls='--')
-i+=1
-axins.semilogx(lb, cl_Hz_fix_list[0]/cl_Hz_fix_list[1], color=color[i], label='Hz-AGN fix', ls='--')
+#i+=1
+#axins.semilogx(lb, cl_Hz_list[0]/cl_Hz_list[1], color=color[i], label='Hz-AGN maybe', ls='--')
+#i+=1
+#axins.semilogx(lb, cl_Hz_nofix_list[0]/cl_Hz_nofix_list[1], color=color[i], label='Hz-AGN', ls='--')
+#i+=1
+#axins.semilogx(lb, cl_Hz_fix_list[0]/cl_Hz_fix_list[1], color=color[i], label='Hz-AGN fix', ls='--')
 
 xdata = xs
 ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
@@ -301,12 +314,12 @@ ax.tick_params(direction='inout', grid_alpha=0.5, labelsize=12, length=7)
 
 mark_inset(ax, axins, loc1=1, loc2=3, fc='none', ec='0.5')
 
-plt.title(r'Ratio of Baryonic and DMO $C_\ell^{\kappa\kappa}$', size=16)
+plt.title('Ratio of Baryonic and Dark Matter-Only \n'+r'Lensing Power Spectra $C_\ell^{\kappa\kappa}$', size=16)
 plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=18)
 plt.xlabel(r'$\ell$', size=17)
 plt.ylim(0.76)
 #plt.show()
-filename = savefolder + 'cl_plots/cl_ratio_zoomin_error2.pdf'
+filename = savefolder + 'cl_plots/cl_ratio_zoomin_error.pdf'
 plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
 
 
@@ -350,6 +363,21 @@ plt.ylim(0.970, 1.025)
 plt.grid(True)
 #plt.show()
 plt.savefig('{0}cl_plots/pk_Hz.pdf'.format(savefolder))
+
+# ------------------------------------------------------------------------
+plt.clf()
+plt.figure(7, figsize=(10,6))
+plt.semilogx(lb, cl_Hz_fix_list[0]/cl_Hz_nofix_list[0], color='r', label='Hz-AGN fix/nofix')
+plt.semilogx(lb, cl_Hz_fix_list[1]/cl_Hz_nofix_list[1], color='k', label='Hz-DM fix/nofix')
+plt.title(r'Horizon $C_\ell^{\kappa\kappa}$ Fix Ratio', size=20)
+plt.ylabel(r'$C_\ell^{\kappa\kappa, fix}$/$C_\ell^{\kappa\kappa, nofix}$', size=20)
+plt.xlabel(r'$\ell$', size=20)
+#plt.legend()
+#plt.xlim(k[0], 1.4)
+#plt.ylim(0.970, 1.025)
+plt.grid(True)
+#plt.show()
+plt.savefig('{0}cl_plots/cl_Hz_fix_nofix.pdf'.format(savefolder))
 
 #'''
 ending = time.time()

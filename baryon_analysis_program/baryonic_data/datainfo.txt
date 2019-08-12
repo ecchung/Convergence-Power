@@ -1,0 +1,4 @@
+BAHAMAS-AGN.dat 	-> powtable_AGN_CALIB_nu0_WMAP9_L400N1024.dat
+BAHAMAS-LowAGN.dat 	-> powtable_AGN_CALIB_Theat_7p6_nu0_WMAP9_L400N1024.dat
+BAHAMAS-HighAGN.dat	-> powtable_AGN_CALIB_Theat_8p0_nu0_WMAP9_L400N1024.dat
+BAHAMAS-DMONLY.dat	-> powtable_DMONLY_2fluid_nu0_WMAP9_L400N1024.dat

@@ -10,3 +10,7 @@ NOZCOOL_L100N512.txt
 WML4_L100N512.txt
 Hz-AGN_powerspec.out
 Hz-DM_powerspec.out
+BAHAMAS-AGN.dat
+BAHAMAS-LowAGN.dat
+BAHAMAS-HighAGN.dat
+BAHAMAS-DMONLY.dat
