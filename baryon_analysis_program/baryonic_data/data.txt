@@ -8,9 +8,9 @@ WML1V848_L100N512.txt
 DMONLY_L100N512.txt
 NOZCOOL_L100N512.txt
 WML4_L100N512.txt
-Hz-AGN_powerspec.out
-Hz-DM_powerspec.out
 BAHAMAS-AGN.dat
 BAHAMAS-LowAGN.dat
 BAHAMAS-HighAGN.dat
 BAHAMAS-DMONLY.dat
+Hz-AGN_powerspec.out
+Hz-DM_powerspec.out

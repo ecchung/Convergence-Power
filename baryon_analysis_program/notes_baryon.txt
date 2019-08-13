@@ -160,6 +160,7 @@ Two ideas:
 -----------------------------------------------------------------------------------------------------------
 (Aug. 12)
 	1. New power spectra: BAHAMAS
+		--> done!!
 	2. Use these for final plot:
 		- OWLS AGN 		(already in plot)
 		- OWLS REF 		(already in plot)
@@ -168,7 +169,14 @@ Two ideas:
 		- BAHAMAS-LowAGN  (new, powtable_AGN_CALIB_Theat_7p6_nu0_WMAP9_L400N1024.dat)
 		- BAHAMAS-HighAGN (new, powtable_AGN_CALIB_Theat_8p0_nu0_WMAP9_L400N1024.dat)
 		- BAHAMAS-DMONLY  (new, powtable_DMONLY_2fluid_nu0_WMAP9_L400N1024.dat)
-
+	  Use the same BAHAMAS-DMONLY for all other BAHAMAS
+	  --> Done!
+-----------------------------------------------------------------------------------------------------------
+(Aug. 13)
+	To do so far:
+	1. Poster
+	2. (Alex) CMB-S4 errors -> get from Fisher matrix code
+	3. Paper
 	
 	
 

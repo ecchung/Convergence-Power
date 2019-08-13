@@ -186,10 +186,10 @@ def CAMB_Delta(save=False, savefolder=None, savename=None):
 #                                    CALCULATING BARYONIC CL VALUES                                     #
 ######################################################################################################### 
 
-def GetBaryonLensingPower(data_key, data, base_index, lmax, dl, nz, which_sim='OWLS', save=False, savefolder=None, savename=None):
+def GetBaryonLensingPower(sim_datakey, sim_data, lmax, dl, nz, which_sim='OWLS', save=False, savefolder=None, savename=None):
     '''
     Make sure that if R_int == True, data is data_same
-    which_sim takes only 'OWLS' or 'Hz'
+    which_sim takes only 'OWLS','Hz', or 'BAHAMAS'
     '''
     
     Xb  = np.linspace(0, Xcmb, nz)
@@ -200,6 +200,11 @@ def GetBaryonLensingPower(data_key, data, base_index, lmax, dl, nz, which_sim='O
     elif which_sim == 'Hz':
         kmax = 32.107
         kmin = 0.07885
+    elif which_sim == 'BAHAMAS':
+        kmax = 514.71854
+        kmin = 0.015707963
+        # zmin = 0.000
+        # zmax = 3.000
         
     dXb = (Xb[2:]-Xb[:-2])/2
     Xb  = Xb[1:-1]
@@ -214,9 +219,9 @@ def GetBaryonLensingPower(data_key, data, base_index, lmax, dl, nz, which_sim='O
     
     # Calculate the integral
     # Use R_interpolator
-    for j, datakey in enumerate(data_key):
+    for j, datakey in enumerate(sim_datakey):
         print(j, datakey)
-        P_ratio_int = data[datakey]['R_interpolator']
+        P_ratio_int = sim_data[datakey]['R_interpolator']
         cl_kappa_bary = np.zeros(lb.shape)
         for i, li in enumerate(lb):
             k = (li+0.5) / Xb
