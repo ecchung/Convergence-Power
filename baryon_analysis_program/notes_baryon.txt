@@ -174,7 +174,8 @@ Two ideas:
 -----------------------------------------------------------------------------------------------------------
 (Aug. 13)
 	To do so far:
-	1. Poster
+	1. Poster 
+		--> Finished draft!
 	2. (Alex) CMB-S4 errors -> get from Fisher matrix code
 	3. Paper
 	

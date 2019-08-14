@@ -44,6 +44,7 @@ for i, key in enumerate(data_key):
 # ------------ OWLS stuff ---------------
 OWLS_basekey   = 'DMONLY_L100N512'
 OWLS_datakey   = np.array(OWLS_datakey)
+OWLS_baseindex_all = int(np.argwhere(data_key==OWLS_basekey)) # from all sims
 OWLS_baseindex = int(np.argwhere(OWLS_datakey==OWLS_basekey)) # OWLS
 OWLS_data      = interpolate_ratio(OWLS_datakey, data, OWLS_baseindex) #for OWLS only
 
@@ -53,12 +54,14 @@ base_index      = OWLS_baseindex   # from old code
 # ------------ OWLS stuff ---------------
 BAHAMAS_basekey   = 'BAHAMAS-DMONLY'
 BAHAMAS_datakey   = np.array(BAHAMAS_datakey)
+BAHAMAS_baseindex_all = int(np.argwhere(data_key==BAHAMAS_basekey)) # from all sims
 BAHAMAS_baseindex = int(np.argwhere(BAHAMAS_datakey==BAHAMAS_basekey)) # BAHAMAS
 BAHAMAS_data      = interpolate_ratio(BAHAMAS_datakey, data, BAHAMAS_baseindex) #for OWLS only
 
 # Mismatched z's
 # ------------ Horizon stuff ---------------
 Hz_basekey   = 'Hz-DM'
+Hz_baseindex_all = int(np.argwhere(data_key==Hz_basekey)) # from all sims
 Hz_baseindex = int(np.argwhere(data_key==Hz_basekey))   # Horizon
 Hz_datakey   = np.array(Hz_datakey)
 
@@ -241,7 +244,7 @@ from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 from matplotlib.patches import Patch
-alpha = 0.3
+alpha = 0.4
 
 datakey_list = np.copy(data_key)
 for i, key in enumerate(datakey_list):
@@ -268,67 +271,61 @@ def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='gray', edgecol
     return artists
 
 
+ind = [7,0,1,14,11,10,12] #[0,1,2,4,7,10,11,12,14] AGN, NOSN, REF, WDENS, DMONLY, BAHAMAS-AGN, -LowAGN, -HighAGN, Hz-AGN
+plot_key = data_key[ind]
+plot_cl  = cl_allsim_list[ind]
+OWLS_DMO = cl_allsim_list[OWLS_baseindex_all]
+BAHAMAS_DMO = cl_allsim_list[BAHAMAS_baseindex_all]
+Hz_DMO = cl_allsim_list[Hz_baseindex_all]
 
-ind = [0,1,2,4,7,10,11,12,14] # AGN, NOSN, REF, WDENS, DMONLY, BAHAMAS-AGN, -LowAGN, -HighAGN, Hz-AGN
-    # only do one DMONLY -> OWLS
-#purples = cm.Purples(np.linspace(0, 1.2, len(BAHAMAS_datakey)))
-warm = cm.YlOrRd(np.linspace(0, 1.0, 6)) # for OWLS
-cold = cm.jet(np.linspace(0, 0.9, 4)) # for BAHAMAS
-rainbow = cm.hsv(np.linspace(0, 0.9, len(ind)))
-Hz_color = 'green'
+cold = np.flip(cm.jet(np.linspace(0.07, 1.0, 9)), axis=0) 
+#rainbow = cm.hsv(np.linspace(0, 0.9, len(ind)))
 
-plt.clf()
+
 fig, ax = plt.subplots(1, figsize=(11,6.5))
-j = 0 #len(cold)-1   # BAHAMAS color
-k = len(warm)-1   # OWLS color
-for i, datakey in enumerate(data_key): 
-    if i in ind:
-        if 'Hz' in datakey:
-            ax.semilogx(lb, cl_allsim_list[i]/cl_allsim_list[-1], color=Hz_color, label=datakey_list[i], ls='--')
-            # -1 is Hz-DM
-        elif 'BAHAMAS' in datakey:
-           
-            ax.semilogx(lb, cl_allsim_list[i]/cl_allsim_list[13], color=cold[j], label=datakey_list[i])
-            # 13 is BAHAMAS-DMONLY
-            j+=1
-            
-        else:
-            k-=1
-            label = datakey_list[i]
-            color = warm[k]
-            if i == OWLS_baseindex: # == 7
-                label='DMONLY (DMO)'
-                color='k'
-                k+=1
-            print(k)
-            ax.semilogx(lb, cl_allsim_list[i]/cl_allsim_list[7], color=color, label=label)
+lines, labels = [],[]
 
-leg = ax.legend(ncol=3, loc='upper left', prop={'size': 11})
+for i, datakey in enumerate(plot_key):  
+    label = datakey
+    
+    if 'Hz' in datakey:
+        line, = ax.semilogx(lb, plot_cl[i]/Hz_DMO, color=cold[i], label=label)
+    elif 'BAHAMAS' in datakey:
+        line, = ax.semilogx(lb, plot_cl[i]/BAHAMAS_DMO, color=cold[i+2], label=label)
+    else:
+        color = cold[i]
+        label = 'OWLS-' + datakey.replace('_L100N512', '')
+        if i == 0:
+            label='DMONLY (DMO)'
+            color='k'
+        line, = ax.semilogx(lb, plot_cl[i]/OWLS_DMO, color=color, label=label)
+    
+    lines.append(line)
+    labels.append(label)
+
+
+# LABEL: swap the positions of Hz-HighAGN and Hz-LowAGN
+lines, labels               = np.array(lines), np.array(labels)
+lines[-1],  lines[-3]  = lines[-3],  lines[-1]
+labels[-1], labels[-3] = labels[-3], labels[-1]
+
+leg = ax.legend(lines[1:], labels[1:], ncol=2, prop={'size': 12}, bbox_to_anchor=(0.33, 0.5, 0.3, 0.5))
 
 # Zoomed plot
-axins = ax.inset_axes([0.09, 0.24, 0.6, 0.59])
-j = 0 #len(cold)   # BAHAMAS color
-k = len(warm)-1   # OWLS color
-for i, datakey in enumerate(data_key): 
-    if i in ind:
-        if 'Hz' in datakey:
-            axins.plot(lb, cl_allsim_list[i]/cl_allsim_list[-1], color=Hz_color, label=datakey_list[i], ls='--')
-            # -1 is Hz-DM
-        elif 'BAHAMAS' in datakey:
-            
-            axins.plot(lb, cl_allsim_list[i]/cl_allsim_list[13], color=cold[j], label=datakey_list[i])
-            # 13 is BAHAMAS-DMONLY
-            j+=1
-        else:
-            k-=1
-            label = datakey_list[i]
-            color = warm[k]
-            if i == OWLS_baseindex: # == 7
-                label='DMONLY (DMO)'
-                color='k'
-                k+=1
-            axins.plot(lb, cl_allsim_list[i]/cl_allsim_list[7], color=color, label=label)
-            # 7 is OWLS DMONLY
+axins = ax.inset_axes([0.07, 0.24, 0.6, 0.57])
+for i, datakey in enumerate(plot_key): 
+    label = datakey
+    
+    if 'Hz' in datakey:
+        axins.plot(lb, plot_cl[i]/Hz_DMO, color=cold[i])
+    elif 'BAHAMAS' in datakey:
+        axins.plot(lb, plot_cl[i]/BAHAMAS_DMO, color=cold[i+2])
+    else:
+        color = cold[i]
+        if i == 0:
+            label='DMONLY (DMO)'
+            color='k'
+        axins.plot(lb, plot_cl[i]/OWLS_DMO, color=color, label=label)
 
 xdata = xs
 ydata = np.ones(xs.shape)       # all ones because Cl_DMO/Cl_DMO
@@ -337,27 +334,28 @@ yerr  = SIGMA_F
 yerr  = np.array([yerr,yerr])
 
 artist = make_error_boxes(axins, xdata, ydata, xerr, yerr, facecolor='darkviolet')
-legend_elements = [Patch(facecolor='darkviolet', edgecolor='None', label='CMB-HD', alpha=alpha)]
-legin = ax.legend([artist],handles=legend_elements,loc='upper right', prop={'size': 11}, bbox_to_anchor=(0.6, 0.7, 0.3, 0.3))
+lines[0].set_label(labels[0])
+legend_elements = [Patch(facecolor='darkviolet', edgecolor='None', label='CMB-HD', alpha=alpha), lines[0]]
+legin = ax.legend([artist],handles=legend_elements,loc='upper right', prop={'size': 12}, bbox_to_anchor=(0.63, 0.7, 0.3, 0.3))
 ax.add_artist(leg)
 ax.add_artist(legin)
 
 axins.set_xlim(10000, 37500)
 axins.set_ylim(0.78, 1.22)
 axins.grid(True)
-axins.tick_params(direction='inout', grid_alpha=0.5, labelsize=11)
+axins.tick_params(direction='inout', grid_alpha=0.5, labelsize=13)
 
 ax.indicate_inset_zoom(axins)
-ax.tick_params(direction='inout', grid_alpha=0.5, labelsize=12, length=7)
+ax.tick_params(direction='inout', grid_alpha=0.5, labelsize=14, length=7)
 
 mark_inset(ax, axins, loc1=1, loc2=3, fc='none', ec='0.5')
 
-plt.title('Ratio of Baryonic and Dark Matter-Only '+r'Lensing Power Spectra $C_\ell^{\kappa\kappa}$', size=16)
-plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=18)
-plt.xlabel(r'$\ell$', size=17)
+plt.title('Ratio of Baryonic and Dark Matter-Only '+r'Lensing Power Spectra $C_\ell^{\kappa\kappa}$', size=18)
+plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=20)
+plt.xlabel(r'$\ell$', size=25)
 plt.ylim(0.76)
-plt.show()
-filename = savefolder + 'cl_plots/cl_ratio_zoomin_error.pdf'
+#plt.show()
+filename = savefolder + 'cl_plots/cl_ratio_zoomin_error_poster.pdf'
 plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
 
 
