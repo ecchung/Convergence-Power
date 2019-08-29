@@ -189,7 +189,7 @@ def CAMB_Delta(save=False, savefolder=None, savename=None):
 def GetBaryonLensingPower(sim_datakey, sim_data, lmax, dl, nz, which_sim='OWLS', save=False, savefolder=None, savename=None):
     '''
     Make sure that if R_int == True, data is data_same
-    which_sim takes only 'OWLS','Hz', or 'BAHAMAS'
+    which_sim takes only 'OWLS','Hz', 'BAHAMAS', 'TNG100' or 'TNG300'
     '''
     
     Xb  = np.linspace(0, Xcmb, nz)
@@ -200,7 +200,7 @@ def GetBaryonLensingPower(sim_datakey, sim_data, lmax, dl, nz, which_sim='OWLS',
     elif which_sim == 'Hz':
         kmax = 32.107
         kmin = 0.07885
-    elif which_sim == 'BAHAMAS':
+    elif (which_sim == 'BAHAMAS') or (which_sim == 'TNG100') or (which_sim == 'TNG300'):
         kmax = 514.71854
         kmin = 0.015707963
         # zmin = 0.000
@@ -242,8 +242,8 @@ def GetBaryonLensingPower(sim_datakey, sim_data, lmax, dl, nz, which_sim='OWLS',
                 np.savetxt(fcl_bary, cl_baryon_list)
             with open('{0}/lb.txt'.format(savefolder), 'w+') as flb:
                 np.savetxt(flb, lb)
-            with open('{0}/data_key.txt'.format(savefolder), 'w+') as fdk:
-                        np.savetxt(fdk, data_key, fmt='%s')
+            with open('{0}/{1}-data_key.txt'.format(savefolder, which_sim), 'w+') as fdk:
+                        np.savetxt(fdk, sim_datakey, fmt='%s')
     
     return cl_baryon_list
 

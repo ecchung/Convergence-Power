@@ -2,3 +2,28 @@ BAHAMAS-AGN.dat 	-> powtable_AGN_CALIB_nu0_WMAP9_L400N1024.dat
 BAHAMAS-LowAGN.dat 	-> powtable_AGN_CALIB_Theat_7p6_nu0_WMAP9_L400N1024.dat
 BAHAMAS-HighAGN.dat	-> powtable_AGN_CALIB_Theat_8p0_nu0_WMAP9_L400N1024.dat
 BAHAMAS-DMONLY.dat	-> powtable_DMONLY_2fluid_nu0_WMAP9_L400N1024.dat
+
+For TNG100 and 300: columns are [z, k, Pk]
+
+All data name listing:
+
+AGN_L100N512.txt
+NOSN_L100N512.txt
+REF_L100N512.txt
+NOSN_NOZCOOL_L100N512.txt
+WDENS_L100N512.txt
+DBLIMFV1618_L100N512.txt
+WML1V848_L100N512.txt
+DMONLY_L100N512.txt
+NOZCOOL_L100N512.txt
+WML4_L100N512.txt
+BAHAMAS-AGN.dat
+BAHAMAS-LowAGN.dat
+BAHAMAS-HighAGN.dat
+BAHAMAS-DMONLY.dat
+Hz-AGN_powerspec.out
+Hz-DM_powerspec.out
+TNG100.dat
+TNG100DM.dat
+TNG300.dat
+TNG300DM.dat

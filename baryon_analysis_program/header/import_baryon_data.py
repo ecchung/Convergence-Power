@@ -31,29 +31,35 @@ def import_data():
     print('i datafilename')
     for i, data_i in enumerate(datafile):
         print(i, data_i)
-        
         # If it's from Horizon simulation
         if 'Hz' in data_i:
             zval = np.loadtxt(datafolder+data_i, usecols=(1,2,3,4,5,6,7,8,9,10), max_rows=1)
             kval = np.loadtxt(datafolder+data_i, usecols=0, skiprows=4)
             Pval = (np.loadtxt(datafolder+data_i, usecols=(1,2,3,4,5,6,7,8,9,10), skiprows=4)).T   # P[z,k]
             Xval = get_chi(results, zval)
-            key  = data_i.strip('_powerspec.out')
-            
-        else:
-            # Load each data listed in the datafile
-            z, k, P      = np.loadtxt('{0}{1}'.format(datafolder, data_i), unpack=True, usecols=(0,1,2), skiprows=1)
-            
+            key  = data_i.strip('_powerspec.out') 
+        elif 'TNG' in data_i:
+            z, k, P      = np.loadtxt(datafolder+data_i)
             zval, zi     = np.unique(z, return_inverse=True)
             kval, ki     = np.unique(k, return_inverse=True)
             Pval         = np.zeros(zval.shape + kval.shape)
             Pval[zi, ki] = P
             Xval         = get_chi(results, zval)
+            key          = data_i.strip('.dat')
+        else:
+            # Load each data listed in the datafile
+            z, k, P      = np.loadtxt('{0}{1}'.format(datafolder, data_i), unpack=True, usecols=(0,1,2), skiprows=1)
+            zval, zi     = np.unique(z, return_inverse=True)
+            kval, ki     = np.unique(k, return_inverse=True)
+            Pval         = np.zeros(zval.shape + kval.shape)
+            Pval[zi, ki] = P
+            Xval         = get_chi(results, zval)
+            if '_L100N512' in data_i:
+                data_i = 'OWLS-' + data_i.replace('_L100N512', '')
             if 'txt' in data_i:
                 key      = data_i.strip('.txt')
             elif 'dat' in data_i:
                 key      = data_i.strip('.dat')
-        
         # Save the values to the data dictionary
         data_key.append(key)
         data[key] = {}
@@ -63,11 +69,23 @@ def import_data():
         data[key]['P'] = Pval
         data[key]['P_interpolator'] = interpolate.interp2d(kval, zval, Pval, kind='cubic')
     print('--------------------------------')
-    
     return np.array(data_key), data
 
+def interpolate_ratio(sim_datakey, data, sim_type, sim_baseindex=None, fix=False):
+    print(sim_type)
+    if (sim_type == 'BAHAMAS') or (sim_type =='OWLS'):
+        sim_data = interpolate_ratio_OWLS_BAHAMAS(sim_datakey, data, sim_baseindex)
+    elif sim_type == 'Hz':
+        sim_data = interpolate_ratio_Hz(sim_datakey, data, fix=fix)
+    elif (sim_type == 'TNG100') or (sim_type == 'TNG300'):
+        sim_data = interpolate_ratio_TNG(sim_datakey, data)
+    else:
+        sim_data = None
+    
+    return sim_data
+        
 
-def interpolate_ratio(sim_datakey, data, sim_baseindex):
+def interpolate_ratio_OWLS_BAHAMAS(sim_datakey, data, sim_baseindex):
     '''
     return modified data dictionary with same z-values and power spectra ratio interpolator: data_same
     'R_interpolator'
@@ -156,5 +174,34 @@ def interpolate_ratio_Hz(sim_datakey, data, fix=False):
     k = sim_data[DM_key]['k']
     z = sim_data[DM_key]['z']
     sim_data[DM_key]['R_interpolator']  = interpolate.interp2d(k, z, sim_data[DM_key]['P']/sim_data[DM_key]['P'], kind='cubic', fill_value=1.)
+    
+    return sim_data
+    
+def interpolate_ratio_TNG(sim_datakey, data):
+    '''
+    sim_datakey is simulation-specific datakey
+    data is dictionary of ALL data
+    sim_base_index is the index of the DMONLY simulation IN THE NEW SIMULATION SPECIFC DATAKEY
+    '''
+    sim_data = {}
+    for key in sim_datakey:
+        if 'DM' in key:
+            DM_key = key
+            sim_data[key] = data[key]
+        else:
+            BARY_key = key
+            sim_data[key] = data[key]
+
+    # Interpolate DM to match k and z for AGN
+    k        = sim_data[BARY_key]['k']
+    z        = sim_data[BARY_key]['z']
+    P_BARY   = sim_data[BARY_key]['P']
+    P_DM     = sim_data[DM_key]['P']
+    
+    sim_data[BARY_key]['R_interpolator'] = interpolate.interp2d(k, z, P_BARY/P_DM, kind='cubic', fill_value=1.)
+            
+    k = sim_data[DM_key]['k']
+    z = sim_data[DM_key]['z']
+    sim_data[DM_key]['R_interpolator']  = interpolate.interp2d(k, z, P_DM/P_DM, kind='cubic', fill_value=1.)
     
     return sim_data

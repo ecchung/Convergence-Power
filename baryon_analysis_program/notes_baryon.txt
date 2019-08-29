@@ -176,8 +176,16 @@ Two ideas:
 	To do so far:
 	1. Poster 
 		--> Finished draft!
+		--> done done!!
 	2. (Alex) CMB-S4 errors -> get from Fisher matrix code
 	3. Paper
+-----------------------------------------------------------------------------------------------------------
+(Aug. 15)
+	1. Read Natarajan Paper: 	fig 8 and associated text
+								fig 4 "
+								section IV before part A
+	2. Paper
+	3. Wait for Alex to do the Fisher code
 	
 	
 
