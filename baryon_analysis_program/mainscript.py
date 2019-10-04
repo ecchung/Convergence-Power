@@ -19,7 +19,7 @@ import matplotlib.cm as cm
 import copy
 
 importfolder='outputs_jul17/'
-savefolder = 'outputs_aug29/'
+savefolder = '../../Fisher/pyfisher/myoutput/plots/'
 datafolder = 'baryonic_data'
 
 #color = cm.hsv(np.linspace(0, 1.7, len(xs)))
@@ -308,7 +308,7 @@ def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='gray', edgecol
     return artists
 
 
-ind = [1,0,4,2,3,6,8,10] # 0:OWLS-AGN, 1:OWLS-DMONLY, 2:BAHAMAS-AGN, 3:BAHAMAS-LowAGN, 4:BAHAMAS-HighAGN, 5:BAHAMAS-DMONLY, 6:Hz-AGN, 7:Hz-DM, 8:TNG100, 9:TNG100DM, 10:TNG300, 11:TNG300DM
+ind = [1,4,2,3,0,6,8,10] # 0:OWLS-AGN, 1:OWLS-DMONLY, 2:BAHAMAS-AGN, 3:BAHAMAS-LowAGN, 4:BAHAMAS-HighAGN, 5:BAHAMAS-DMONLY, 6:Hz-AGN, 7:Hz-DM, 8:TNG100, 9:TNG100DM, 10:TNG300, 11:TNG300DM
 plot_key = data_key[ind]
 plot_cl  = cl_allsim_list[ind]
 OWLS_DMO = cl_allsim_list[OWLS_baseindex_all]
@@ -344,60 +344,72 @@ TNG300_DMO = cl_allsim_list[TNG300_baseindex_all]
     
 
 
-cold = np.flip(cm.jet(np.linspace(0.07, 1.0, len(plot_key)+1)), axis=0) 
+#cold = np.flip(cm.jet(np.linspace(0.07, 1.0, len(plot_key)+1)), axis=0) 
 #rainbow = cm.hsv(np.linspace(0, 0.9, len(ind)))
+cold = np.array(['k', 'red', 'darkorange', 'yellow', 'limegreen', 'green', 'dodgerblue', 'mediumblue'])
 
-
-fig, ax = plt.subplots(1, figsize=(11,7))
+fig, ax = plt.subplots(1, figsize=(15,7))
 lines, labels = [],[]
 
 for i, datakey in enumerate(plot_key):  
     label = datakey
     
     if 'Hz' in datakey:
-        line, = ax.semilogx(lb, plot_cl[i]/Hz_DMO, color=cold[i], label=label)
+        label = label.replace('Hz', 'Horizon')
+        line, = ax.semilogx(lb, plot_cl[i]/Hz_DMO, color=cold[i], label=label, ls='dotted')
     elif 'BAHAMAS' in datakey:
         line, = ax.semilogx(lb, plot_cl[i]/BAHAMAS_DMO, color=cold[i], label=label)
     elif 'TNG100' in datakey:
-        line, = ax.semilogx(lb, plot_cl[i]/TNG100_DMO, color=cold[i], label=label)
+        label = 'Illustris-' + label
+        line, = ax.semilogx(lb, plot_cl[i]/TNG100_DMO, color=cold[i], label=label, ls='--')
     elif 'TNG300' in datakey:
-        line, = ax.semilogx(lb, plot_cl[i]/TNG300_DMO, color=cold[i], label=label)
+        label = 'Illustris-' + label
+        line, = ax.semilogx(lb, plot_cl[i]/TNG300_DMO, color=cold[i], label=label, ls='--')
     else:
         color = cold[i]
         if i == 0:
             label='DMONLY (DMO)'
             color='k'
-        line, = ax.semilogx(lb, plot_cl[i]/OWLS_DMO, color=color, label=label)
+            line, = ax.semilogx(lb, plot_cl[i]/OWLS_DMO, color=color, label=label)
+        else:
+            line, = ax.semilogx(lb, plot_cl[i]/OWLS_DMO, color=color, label=label, ls='-.')
+        
     
     lines.append(line)
     labels.append(label)
 
+lines  = lines[1:] #+ [lines[0]] # no DMONLY in legend
+labels = labels[1:] #+ [labels[0]]
 
-# LABEL: swap the positions of Hz-HighAGN and Hz-LowAGN
-#lines, labels               = np.array(lines), np.array(labels)
-#lines[-1],  lines[-3]  = lines[-3],  lines[-1]
-#labels[-1], labels[-3] = labels[-3], labels[-1]
-
-leg = ax.legend(lines[1:], labels[1:], ncol=2, prop={'size': 12}, bbox_to_anchor=(0.30, 0.5, 0.3, 0.5))
+leg = ax.legend(lines, labels, ncol=3, prop={'size': 12}, bbox_to_anchor=(0.38, 0.48, 0.3, 0.5), frameon=False)
 
 # Zoomed plot
-axins = ax.inset_axes([0.09, 0.30, 0.56, 0.48])
+axins = ax.inset_axes([0.52, 0.33, 0.35, 0.45])
+axins2 = ax.inset_axes([0.08, 0.33, 0.35, 0.45])
 for i, datakey in enumerate(plot_key): 
     label = datakey
     
     if 'Hz' in datakey:
-        axins.plot(lb, plot_cl[i]/Hz_DMO, color=cold[i])
+        axins.plot(lb, plot_cl[i]/Hz_DMO, ls=':', color=cold[i])
+        axins2.plot(lb, plot_cl[i]/Hz_DMO, ls=':', color=cold[i])
     elif 'BAHAMAS' in datakey:
         axins.plot(lb, plot_cl[i]/BAHAMAS_DMO, color=cold[i])
+        axins2.plot(lb, plot_cl[i]/BAHAMAS_DMO, color=cold[i])
     elif 'TNG100' in datakey:
-        axins.plot(lb, plot_cl[i]/TNG100_DMO, color=cold[i])
+        axins.plot(lb, plot_cl[i]/TNG100_DMO, ls='--', color=cold[i])
+        axins2.plot(lb, plot_cl[i]/TNG100_DMO, ls='--', color=cold[i])
     elif 'TNG300' in datakey:
-        axins.plot(lb, plot_cl[i]/TNG300_DMO, color=cold[i])
+        axins.plot(lb, plot_cl[i]/TNG300_DMO, ls='--', color=cold[i])
+        axins2.plot(lb, plot_cl[i]/TNG300_DMO, ls='--', color=cold[i])
     else:
         color = cold[i]
         if i == 0:
             color='k'
-        axins.plot(lb, plot_cl[i]/OWLS_DMO, color=color)
+            axins.plot(lb, plot_cl[i]/OWLS_DMO, color=color)
+            axins2.plot(lb, plot_cl[i]/OWLS_DMO, color=color)
+        else:
+            axins.plot(lb, plot_cl[i]/OWLS_DMO, ls='-.', color=color)
+            axins2.plot(lb, plot_cl[i]/OWLS_DMO, ls='-.', color=color)
 
 # -------- Adding CMB-HD ---------
 xdata = xs
@@ -407,21 +419,21 @@ yerr  = SIGMA_F
 yerr  = np.array([yerr,yerr])
 
 facecolor = 'darkviolet'
-artist1 = make_error_boxes(ax, xdata, ydata, xerr, yerr, facecolor=facecolor)
-legend_elements = [Patch(facecolor=facecolor, edgecolor='None', label='CMB-HD', alpha=alpha)]
+artist1 = make_error_boxes(axins, xdata, ydata, xerr, yerr, facecolor=facecolor)
+legend_elements1 = Patch(facecolor=facecolor, edgecolor='None', label='CMB-HD', alpha=alpha)
 #legin = ax.legend([artist1],handles=legend_elements,loc='upper right', prop={'size': 12}, bbox_to_anchor=(0.63, 0.7, 0.3, 0.3))
 #ax.add_artist(legin)
 
-# -------- Adding CMB-S4 ---------
+# -------- Adding SO ---------
 xdata = ellmid
 ydata = np.ones(xdata.shape)       # all ones because Cl_DMO/Cl_DMO
 xerr  = np.array([ellwid,ellwid])
 yerr  = errso/DMO(ellmid)
 yerr  = np.array([yerr,yerr])
 
-facecolor = 'lightcoral'
-artist2 = make_error_boxes(ax, xdata, ydata, xerr, yerr, facecolor=facecolor)
-legend_elements2 = [Patch(facecolor=facecolor, edgecolor='None', label='SO', alpha=1.)]
+facecolor = 'hotpink'
+artist2 = make_error_boxes(axins2, xdata, ydata, xerr, yerr, facecolor=facecolor, alpha=0.5)
+legend_elements2 = Patch(facecolor=facecolor, edgecolor='None', label='Stage III', alpha=0.5)
 #legin = ax.legend([artist2],handles=legend_elements,loc='upper right', prop={'size': 12}, bbox_to_anchor=(0.63, 0.7, 0.3, 0.3))
 #ax.add_artist(legin)
 
@@ -432,34 +444,44 @@ xerr  = np.array([ellwid,ellwid])
 yerr  = errs4/DMO(ellmid)
 yerr  = np.array([yerr,yerr])
 
-facecolor = 'chartreuse'
-artist3 = make_error_boxes(ax, xdata, ydata, xerr, yerr, facecolor=facecolor, alpha=1.)
-lines[0].set_label(labels[0])
-legend_elements3 = [Patch(facecolor=facecolor, edgecolor='None', label='CMB-S4', alpha=alpha), lines[0]]
+facecolor = 'indianred'
+artist3 = make_error_boxes(axins2, xdata, ydata, xerr, yerr, facecolor=facecolor, alpha=1.)
+legend_elements3 = Patch(facecolor=facecolor, edgecolor='None', label='Stage IV', alpha=1.)
 
-legin = ax.legend([artist1,artist2,artist3],handles=legend_elements3,loc='upper right', prop={'size': 12}, bbox_to_anchor=(0.63, 0.7, 0.3, 0.3))
+legin = ax.legend([artist1,artist2,artist3],handles=[legend_elements1,legend_elements2,legend_elements3],\
+loc='upper right', prop={'size': 12}, bbox_to_anchor=(0.55, 0.681, 0.3, 0.3), frameon=False)
 ax.add_artist(legin)
 # --------------------------------
 
-ax.add_artist(leg)
 axins.set_xlim(10000, 37500)
 axins.set_ylim(0.78, 1.22)
-axins.grid(True)
-axins.tick_params(direction='inout', grid_alpha=0.5, labelsize=12)
+#axins.grid(True)
+axins.tick_params(direction='inout', grid_alpha=0.5, labelsize=10.5)
+axins.set_xticks([15000, 20000, 25000, 30000, 35000])
 
+axins2.set_xlim(500, 3000)
+axins2.set_ylim(0.95, 1.05)
+#axins2.grid(True)
+axins2.tick_params(direction='inout', grid_alpha=0.5, labelsize=10.5)
+
+
+ax.add_artist(leg)
 ax.indicate_inset_zoom(axins)
+ax.indicate_inset_zoom(axins2)
 ax.tick_params(direction='inout', grid_alpha=0.5, labelsize=14, length=7)
 
 mark_inset(ax, axins, loc1=1, loc2=3, fc='none', ec='0.5')
+#mark_inset(ax, axins2, loc1=1, loc2=3, fc='none', ec='0.5')
 
-plt.title('Ratio of Baryonic and Dark Matter-Only '+r'Lensing Power Spectra $C_\ell^{\kappa\kappa}$', size=18)
-plt.ylabel(r'$C_\ell^{\kappa\kappa, bary}$/$C_\ell^{\kappa\kappa, DMO}$', size=20)
+#plt.title('Ratio of Baryonic and Dark Matter-Only '+r'Lensing Power Spectra $C_\ell^{\kappa\kappa}$', size=18)
+plt.ylabel(r'$C_\ell^{\kappa\kappa, \rm bary}$/$C_\ell^{\kappa\kappa, \rm DMO}$', size=20)
 plt.xlabel(r'$\ell$', size=25)
 plt.ylim(0.78, 1.7)
+plt.xlim(1e1, 1e5)
 #plt.show()
 
 
-filename = savefolder + 'cl_plots/cl_ratio_zoomin_error_new.pdf'
+filename = savefolder + 'cl_ratio_zoomin_error_Oct2.pdf'
 plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
 
 

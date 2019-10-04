@@ -1,0 +1,16 @@
+Corresponding simulations to data
+
+cl_BAHAMAS_list_lmax1e5.txt:
+['BAHAMAS-AGN', 'BAHAMAS-LowAGN', 'BAHAMAS-HighAGN','BAHAMAS-DMONLY']
+
+cl_Hz_nofix_list_lmax1e5.txt:
+['Hz-AGN', 'Hz-DM']
+
+cl_OWLS_list_lmax1e5.txt:
+['OWLS-AGN', 'OWLS-DMONLY']
+
+cl_TNG100_list_lmax1e5.txt:
+['TNG100', 'TNG100DM']
+
+cl_TNG300_list_lmax1e5.txt:
+['TNG300', 'TNG300DM']
