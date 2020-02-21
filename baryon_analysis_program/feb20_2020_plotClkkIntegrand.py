@@ -140,12 +140,14 @@ Is_DMO     = (Ws/Xs)**2 * Pls_DMO
 
 # plot
 fig, ax= plt.subplots(1, figsize=(8,6))
-ax.semilogx(zs[Xs>400],Pls_bary[Xs>400]/Pls_DMO[Xs>400], label='interpolated')
-ax.semilogx(z, Pl_bary/Pl_DMO,c='red',ls='None', marker='.',label='raw data')
-plt.ylabel(r'$\frac{\hat P_{\rm bary}(k,z)}{\hat P_{\rm DMO}(k,z)}$')
+#ax.semilogx(zs[Xs>100],Pls_bary[Xs>100]/Pls_DMO[Xs>100], label='interpolated')
+ax.semilogx(zs,Pls_bary/Pls_DMO, label='interpolated')
+
+#ax.semilogx(z, Pl_bary/Pl_DMO,c='red',ls='None', marker='.',label='raw data') # <-- NOT RAW AT ALL. I USED THE INTERPOLATION
+plt.ylabel(r'${P_{\rm bary}(k_\ell,z)}$ / ${P_{\rm DMO}(k_\ell,z)}$', size=12)
 plt.xlabel(r'$z$')
 plt.title(r'BAHAMAS-HighAGN at $\ell=1000$')
-plt.legend()
+#plt.legend()
 #plt.show()
 plt.savefig(savefolder + 'feb20_2020_P_ratio_l=1000_BAHAMAS_HighAGN.pdf')
 
