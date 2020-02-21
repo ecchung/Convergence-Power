@@ -19,7 +19,8 @@ def import_data():
     if dirpath == '/mnt/raid-cita/echung/Convergence-Power/baryon_analysis_program':
         datafolder = dirpath+'/baryonic_data/'
     else:
-        datafolder = dirpath+'/../baryonic_data/'
+        #datafolder = dirpath+'/../baryonic_data/'
+        datafolder = dirpath+'/baryonic_data/'
     datafile = np.loadtxt(datafolder+'data.txt', dtype=str)
     
     # Load data into a dictionary accessible with keys that are name of the files without .txt and 'z', 'X', 'k', 'P'

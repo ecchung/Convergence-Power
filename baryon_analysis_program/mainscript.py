@@ -1,5 +1,6 @@
 # BARYONIC ANALYSIS (abstract version of baryon_analysis_old.py)
 # Last edited July 17, 2019
+# Feb 20, 2020 -> '../' gave troubles in line 22 of import_baryon_data.py so I commented it out
 import time
 beginning = time.time()
 
@@ -58,7 +59,7 @@ OWLS_data      = interpolate_ratio(OWLS_datakey, data, 'OWLS', sim_baseindex=OWL
 data_same      = OWLS_data        # from old code
 base_index     = OWLS_baseindex   # from old code
 
-# ------------ OWLS stuff ---------------
+# ------------ BAHAMAS stuff ---------------
 BAHAMAS_basekey   = 'BAHAMAS-DMONLY'
 BAHAMAS_datakey   = np.array(BAHAMAS_datakey)
 BAHAMAS_baseindex_all = int(np.argwhere(data_key==BAHAMAS_basekey)) # from all sims
@@ -358,6 +359,8 @@ for i, datakey in enumerate(plot_key):
         label = label.replace('Hz', 'Horizon')
         line, = ax.semilogx(lb, plot_cl[i]/Hz_DMO, color=cold[i], label=label, ls='dotted')
     elif 'BAHAMAS' in datakey:
+        if label == 'BAHAMAS-AGN':
+            label = 'BAHAMAS'
         line, = ax.semilogx(lb, plot_cl[i]/BAHAMAS_DMO, color=cold[i], label=label)
     elif 'TNG100' in datakey:
         label = 'Illustris-' + label
@@ -481,7 +484,7 @@ plt.xlim(1e1, 1e5)
 #plt.show()
 
 
-filename = savefolder + 'cl_ratio_zoomin_error_Oct2.pdf'
+filename = savefolder + 'cl_ratio_zoomin_error_Oct10.pdf'
 plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
 
 
