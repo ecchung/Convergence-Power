@@ -108,7 +108,7 @@ kl = (ell + 0.5)/X  # k at the given ell for each X
 # load interpolators
 P_int_bary = dataset[which_sim]['P_interpolator'] # P_int(k, z); k and/or z can be a single value or a list
 R_int_bary = dataset[which_sim]['R_interpolator']
-R_int_DMO  = dataset[sim_DMO]['R_interpolator']. # literally just 1's
+R_int_DMO  = dataset[sim_DMO]['R_interpolator'] # literally just 1s
 
 ''' as of feb 20 -- this one is wrong (feb 28)
 # baryonic ones
@@ -169,7 +169,7 @@ Is_DMO  = (Ws/Xs)**2 * P_delta(zs, kls, from_func='Weyl') #* np.diagonal(np.flip
 
 plt.figure(1, figsize=(8,6))
 plt.plot(Xs, Is_bary - Is_DMO, c='r', label='Difference between baryonic \nand DMO $C_\ell^{\kappa\kappa}$ integrand')
-plt.plot(X[-1]*np.ones(100), np.linspace(-4.5e-14, 0.2e-14, 100), c='k', ls='--', label='Max $\chi(z)$ of BAHAMAS-HighAGN \n'+r'($z_{max}=3$, $k_{max}=6508$)')
+plt.plot(X[-1]*np.ones(100), np.linspace(-4.5e-14, 0.2e-14, 100), c='k', ls='--', label='Max $\chi(z)$ of BAHAMAS-HighAGN \n'+r'($z_{max}=3$, $\chi_{max}=6508$)')
 plt.ylabel(r'Integrand of $C_{\ell \: \rm bary}^{\kappa\kappa}$ - Integrand of $C_{\ell \: \rm DMO}^{\kappa\kappa}$')
 plt.xlabel(r'$\chi(z)$')
 plt.title(r'BAHAMAS-HighAGN at $\ell=1000$')
