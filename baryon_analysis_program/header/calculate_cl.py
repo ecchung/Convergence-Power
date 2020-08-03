@@ -227,7 +227,7 @@ def GetBaryonLensingPower(sim_datakey, sim_data, lmax, dl, nz, which_sim='OWLS',
             k = (li+0.5) / Xb
             d[:] = 1
             d[k>=kmax] = 0
-            cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal(np.flip(P_ratio_int(k, zb), axis=1)) * wb**2 / Xb**2) 
+            cl_kappa_bary[i] = np.dot(dXb, d * P_delta(zb, k, from_func='Weyl') * np.diagonal(np.flip(P_ratio_int(k/(H0/100), zb), axis=1)) * wb**2 / Xb**2) 
         cl_baryon_list.append(cl_kappa_bary)
     
     if save==True:

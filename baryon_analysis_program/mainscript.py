@@ -19,7 +19,7 @@ from header.import_baryon_data import import_data, interpolate_ratio
 import matplotlib.cm as cm
 import copy
 
-importfolder='outputs_jul17/'
+importfolder='outputs-importfolder/'
 savefolder = '../../Fisher/pyfisher/myoutput/plots/'
 datafolder = 'baryonic_data'
 
@@ -97,23 +97,23 @@ TNG300_data      = interpolate_ratio(TNG300_datakey, data, 'TNG300')
 #                                    CALCULATE & SAVE CL VALUES                                         #
 ######################################################################################################### 
                                 #-------------CAMB CL-------------# 
-cl_camb  = CAMB_auto(lmax=40000, save=True, savefolder=savefolder+'cl_values/', savename='cl_camb')
-cl_weyl  = CAMB_Weyl(save=True, savefolder=savefolder+'cl_values/', savename='cl_weyl')
-cl_delta = CAMB_Delta(save=True, savefolder=savefolder+'cl_values/', savename='cl_delta')
+cl_camb  = CAMB_auto(lmax=40000, save=True, savefolder=importfolder+'cl_values/', savename='cl_camb')
+cl_weyl  = CAMB_Weyl(save=True, savefolder=importfolder+'cl_values/', savename='cl_weyl')
+cl_delta = CAMB_Delta(save=True, savefolder=importfolder+'cl_values/', savename='cl_delta')
 
                                 #-----------BARYONIC CL-----------# 
 nz = 100
 lmax = 1e5
 dl = 1
-cl_OWLS_list     = GetBaryonLensingPower(OWLS_datakey, OWLS_data, lmax, dl, nz, which_sim='OWLS', save=True, savefolder=savefolder+'cl_values/', savename='cl_OWLS_list_lmax1e5')
-cl_BAHAMAS_list  = GetBaryonLensingPower(BAHAMAS_datakey, BAHAMAS_data, lmax, dl, nz, which_sim='BAHAMAS', save=True, savefolder=savefolder+'cl_values/', savename='cl_BAHAMAS_list_lmax1e5')
+cl_OWLS_list     = GetBaryonLensingPower(OWLS_datakey, OWLS_data, lmax, dl, nz, which_sim='OWLS', save=True, savefolder=importfolder+'cl_values/', savename='cl_OWLS_list_lmax1e5')
+cl_BAHAMAS_list  = GetBaryonLensingPower(BAHAMAS_datakey, BAHAMAS_data, lmax, dl, nz, which_sim='BAHAMAS', save=True, savefolder=importfolder+'cl_values/', savename='cl_BAHAMAS_list_lmax1e5')
 
-cl_Hz_nofix_list = GetBaryonLensingPower(Hz_datakey, Hz_data_nofix, lmax, dl, nz, which_sim='Hz', save=True, savefolder=savefolder+'cl_values/', savename='cl_Hz_nofix_list_lmax1e5')
-#cl_Hz_list      = GetBaryonLensingPower(Hz_datakey, Hz_data, lmax, dl, nz, which_sim='Hz', save=True, savefolder=savefolder+'cl_values/', savename='cl_Hz_list_lmax1e5')
-#cl_Hz_fix_list  = GetBaryonLensingPower(Hz_datakey, Hz_data_fix, lmax, dl, nz, which_sim='Hz', save=True, savefolder=savefolder+'cl_values/', savename='cl_Hz_fix_list_lmax1e5')
+cl_Hz_nofix_list = GetBaryonLensingPower(Hz_datakey, Hz_data_nofix, lmax, dl, nz, which_sim='Hz', save=True, savefolder=importfolder+'cl_values/', savename='cl_Hz_nofix_list_lmax1e5')
+#cl_Hz_list      = GetBaryonLensingPower(Hz_datakey, Hz_data, lmax, dl, nz, which_sim='Hz', save=True, savefolder=importfolder+'cl_values/', savename='cl_Hz_list_lmax1e5')
+#cl_Hz_fix_list  = GetBaryonLensingPower(Hz_datakey, Hz_data_fix, lmax, dl, nz, which_sim='Hz', save=True, savefolder=importfolder+'cl_values/', savename='cl_Hz_fix_list_lmax1e5')
 
-cl_TNG100_list   = GetBaryonLensingPower(TNG100_datakey, TNG100_data, lmax, dl, nz, which_sim='TNG100', save=True, savefolder=savefolder+'cl_values/', savename='cl_TNG100_list_lmax1e5')
-cl_TNG300_list   = GetBaryonLensingPower(TNG300_datakey, TNG300_data, lmax, dl, nz, which_sim='TNG300', save=True, savefolder=savefolder+'cl_values/', savename='cl_TNG300_list_lmax1e5')
+cl_TNG100_list   = GetBaryonLensingPower(TNG100_datakey, TNG100_data, lmax, dl, nz, which_sim='TNG100', save=True, savefolder=importfolder+'cl_values/', savename='cl_TNG100_list_lmax1e5')
+cl_TNG300_list   = GetBaryonLensingPower(TNG300_datakey, TNG300_data, lmax, dl, nz, which_sim='TNG300', save=True, savefolder=importfolder+'cl_values/', savename='cl_TNG300_list_lmax1e5')
 
 
 '''
