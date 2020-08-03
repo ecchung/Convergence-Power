@@ -180,7 +180,7 @@ Two ideas:
 	2. (Alex) CMB-S4 errors -> get from Fisher matrix code
 	3. Paper
 -----------------------------------------------------------------------------------------------------------
-(Aug. 15)
+(Aug. 15 2019)
 	1. Read Natarajan Paper: 	fig 8 and associated text
 								fig 4 "
 								section IV before part A

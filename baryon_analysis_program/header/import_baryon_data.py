@@ -41,6 +41,9 @@ def import_data():
             key  = data_i.strip('_powerspec.out') 
         elif 'TNG' in data_i:
             z, k, P      = np.loadtxt(datafolder+data_i)
+            if '300' in data_i:                         # Aug 3 2020 fix
+                z        = z*(75./205.) 
+                k        = k*(205./75.)**3
             zval, zi     = np.unique(z, return_inverse=True)
             kval, ki     = np.unique(k, return_inverse=True)
             Pval         = np.zeros(zval.shape + kval.shape)
