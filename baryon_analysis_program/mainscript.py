@@ -14,7 +14,6 @@ import scipy.integrate as integrate
 from scipy import interpolate
 from numpy.linalg import inv
 from header.CAMB_header import *
-from header.calculate_cl import CAMB_auto, CAMB_Weyl, CAMB_Delta, P_delta, GetBaryonLensingPower
 from header.import_baryon_data import import_data, interpolate_ratio
 import matplotlib.cm as cm
 import copy
@@ -96,6 +95,7 @@ TNG300_data      = interpolate_ratio(TNG300_datakey, data, 'TNG300')
 ######################################################################################################### 
 #                                    CALCULATE & SAVE CL VALUES                                         #
 ######################################################################################################### 
+from header.calculate_cl import CAMB_auto, CAMB_Weyl, CAMB_Delta, P_delta, GetBaryonLensingPower
                                 #-------------CAMB CL-------------# 
 cl_camb  = CAMB_auto(lmax=40000, save=True, savefolder=importfolder+'cl_values/', savename='cl_camb')
 cl_weyl  = CAMB_Weyl(save=True, savefolder=importfolder+'cl_values/', savename='cl_weyl')
@@ -105,15 +105,15 @@ cl_delta = CAMB_Delta(save=True, savefolder=importfolder+'cl_values/', savename=
 nz = 100
 lmax = 1e5
 dl = 1
-cl_OWLS_list     = GetBaryonLensingPower(OWLS_datakey, OWLS_data, lmax, dl, nz, which_sim='OWLS', save=True, savefolder=importfolder+'cl_values/', savename='cl_OWLS_list_lmax1e5')
-cl_BAHAMAS_list  = GetBaryonLensingPower(BAHAMAS_datakey, BAHAMAS_data, lmax, dl, nz, which_sim='BAHAMAS', save=True, savefolder=importfolder+'cl_values/', savename='cl_BAHAMAS_list_lmax1e5')
+cl_OWLS_list     = GetBaryonLensingPower(OWLS_datakey, OWLS_data, lmax, dl, nz, which_sim='OWLS', save=True, savefolder=importfolder+'cl_values/', savename='cl_OWLS_list_lmax1e5_fixedratio')
+cl_BAHAMAS_list  = GetBaryonLensingPower(BAHAMAS_datakey, BAHAMAS_data, lmax, dl, nz, which_sim='BAHAMAS', save=True, savefolder=importfolder+'cl_values/', savename='cl_BAHAMAS_list_lmax1e5_fixedratio')
 
-cl_Hz_nofix_list = GetBaryonLensingPower(Hz_datakey, Hz_data_nofix, lmax, dl, nz, which_sim='Hz', save=True, savefolder=importfolder+'cl_values/', savename='cl_Hz_nofix_list_lmax1e5')
+cl_Hz_nofix_list = GetBaryonLensingPower(Hz_datakey, Hz_data_nofix, lmax, dl, nz, which_sim='Hz', save=True, savefolder=importfolder+'cl_values/', savename='cl_Hz_nofix_list_lmax1e5_fixedratio')
 #cl_Hz_list      = GetBaryonLensingPower(Hz_datakey, Hz_data, lmax, dl, nz, which_sim='Hz', save=True, savefolder=importfolder+'cl_values/', savename='cl_Hz_list_lmax1e5')
 #cl_Hz_fix_list  = GetBaryonLensingPower(Hz_datakey, Hz_data_fix, lmax, dl, nz, which_sim='Hz', save=True, savefolder=importfolder+'cl_values/', savename='cl_Hz_fix_list_lmax1e5')
 
-cl_TNG100_list   = GetBaryonLensingPower(TNG100_datakey, TNG100_data, lmax, dl, nz, which_sim='TNG100', save=True, savefolder=importfolder+'cl_values/', savename='cl_TNG100_list_lmax1e5')
-cl_TNG300_list   = GetBaryonLensingPower(TNG300_datakey, TNG300_data, lmax, dl, nz, which_sim='TNG300', save=True, savefolder=importfolder+'cl_values/', savename='cl_TNG300_list_lmax1e5')
+cl_TNG100_list   = GetBaryonLensingPower(TNG100_datakey, TNG100_data, lmax, dl, nz, which_sim='TNG100', save=True, savefolder=importfolder+'cl_values/', savename='cl_TNG100_list_lmax1e5_fixedratio')
+cl_TNG300_list   = GetBaryonLensingPower(TNG300_datakey, TNG300_data, lmax, dl, nz, which_sim='TNG300', save=True, savefolder=importfolder+'cl_values/', savename='cl_TNG300_list_lmax1e5_fixedratio')
 
 
 '''
@@ -129,17 +129,21 @@ l         = np.array(np.loadtxt('{0}cl_values/l.txt'.format(importfolder))) # cu
 
                                 #-----------BARYONIC CL-----------# 
 #cl_OWLS_list    = np.array(np.loadtxt('{0}cl_values/cl_OWLS_list.txt'.format(importfolder)))
-cl_OWLS_list     = np.array(np.loadtxt('{0}cl_values/cl_OWLS_list_lmax1e5.txt'.format(importfolder)))
-cl_BAHAMAS_list  = np.array(np.loadtxt('{0}cl_values/cl_BAHAMAS_list_lmax1e5.txt'.format(importfolder)))
+cl_OWLS_list     = np.array(np.loadtxt('{0}cl_values/cl_OWLS_list_lmax1e5_fixedratio.txt'.format(importfolder)))
+cl_BAHAMAS_list  = np.array(np.loadtxt('{0}cl_values/cl_BAHAMAS_list_lmax1e5_fixedratio.txt'.format(importfolder)))
 
 #cl_Hz_list      = np.array(np.loadtxt('{0}cl_values/cl_Hz_list_lmax1e5.txt'.format(importfolder)))
-cl_Hz_nofix_list = np.array(np.loadtxt('{0}cl_values/cl_Hz_nofix_list_lmax1e5.txt'.format(importfolder)))
+cl_Hz_nofix_list = np.array(np.loadtxt('{0}cl_values/cl_Hz_nofix_list_lmax1e5_fixedratio.txt'.format(importfolder)))
 #cl_Hz_fix_list  = np.array(np.loadtxt('{0}cl_values/cl_Hz_fix_list_lmax1e5.txt'.format(importfolder)))
 
-cl_TNG100_list = np.array(np.loadtxt('{0}cl_values/cl_TNG100_list_lmax1e5.txt'.format(importfolder)))
-cl_TNG300_list = np.array(np.loadtxt('{0}cl_values/cl_TNG300_list_lmax1e5.txt'.format(importfolder)))
+cl_TNG100_list   = np.array(np.loadtxt('{0}cl_values/cl_TNG100_list_lmax1e5_fixedratio.txt'.format(importfolder)))
+cl_TNG300_list   = np.array(np.loadtxt('{0}cl_values/cl_TNG300_list_lmax1e5_fixedratio.txt'.format(importfolder)))
+#cl_TNG300_list_2 = np.array(np.loadtxt('{0}cl_values/cl_TNG300_list_lmax1e6_fixedratio.txt'.format(importfolder))) 
+    # variations of cl_TNG300_list: cl_TNG300_list_lmax1e5_fixedratio_2, cl_TNG300_list_lmax1e6_fixedratio
 
 lb               = np.array(np.loadtxt('{0}cl_values/lb.txt'.format(importfolder)))
+#lb5 = np.arange(10, 1e5+1, 1, dtype=np.float64) # current lb
+#lb6 = np.arange(10, 1e6+1, 2, dtype=np.float64) # to be used with cl_TNG300...lmax1e6
 
 cl_allsim_list = np.concatenate((cl_OWLS_list, cl_BAHAMAS_list, cl_Hz_nofix_list, cl_TNG100_list, cl_TNG300_list))
 
@@ -309,7 +313,7 @@ def make_error_boxes(ax, xdata, ydata, xerror, yerror, facecolor='gray', edgecol
     return artists
 
 
-ind = [1,4,2,3,0,6,8,10] # 0:OWLS-AGN, 1:OWLS-DMONLY, 2:BAHAMAS-AGN, 3:BAHAMAS-LowAGN, 4:BAHAMAS-HighAGN, 5:BAHAMAS-DMONLY, 6:Hz-AGN, 7:Hz-DM, 8:TNG100, 9:TNG100DM, 10:TNG300, 11:TNG300DM
+ind = [1,4,2,3,0,6,10,8] # 0:OWLS-AGN, 1:OWLS-DMONLY, 2:BAHAMAS-AGN, 3:BAHAMAS-LowAGN, 4:BAHAMAS-HighAGN, 5:BAHAMAS-DMONLY, 6:Hz-AGN, 7:Hz-DM, 8:TNG100, 9:TNG100DM, 10:TNG300, 11:TNG300DM
 plot_key = data_key[ind]
 plot_cl  = cl_allsim_list[ind]
 OWLS_DMO = cl_allsim_list[OWLS_baseindex_all]
@@ -347,7 +351,7 @@ TNG300_DMO = cl_allsim_list[TNG300_baseindex_all]
 
 #cold = np.flip(cm.jet(np.linspace(0.07, 1.0, len(plot_key)+1)), axis=0) 
 #rainbow = cm.hsv(np.linspace(0, 0.9, len(ind)))
-cold = np.array(['k', 'red', 'darkorange', 'yellow', 'limegreen', 'green', 'dodgerblue', 'mediumblue'])
+cold = np.array(['k', 'red', 'darkorange', 'xkcd:sun yellow', 'limegreen', 'xkcd:vivid purple', 'xkcd:neon blue', 'mediumblue'])
 
 fig, ax = plt.subplots(1, figsize=(15,7))
 lines, labels = [],[]
@@ -381,8 +385,8 @@ for i, datakey in enumerate(plot_key):
     lines.append(line)
     labels.append(label)
 
-lines  = lines[1:] #+ [lines[0]] # no DMONLY in legend
-labels = labels[1:] #+ [labels[0]]
+lines  = lines[1:-2] + [lines[-1], lines[-2]]#+ [lines[0]] # no DMONLY in legend
+labels = labels[1:-2] + [labels[-1], labels[-2]] #+ [labels[0]]
 
 leg = ax.legend(lines, labels, ncol=3, prop={'size': 12}, bbox_to_anchor=(0.38, 0.48, 0.3, 0.5), frameon=False)
 
@@ -480,11 +484,11 @@ mark_inset(ax, axins, loc1=1, loc2=3, fc='none', ec='0.5')
 plt.ylabel(r'$C_\ell^{\kappa\kappa, \rm bary}$/$C_\ell^{\kappa\kappa, \rm DMO}$', size=20)
 plt.xlabel(r'$\ell$', size=25)
 plt.ylim(0.78, 1.7)
-plt.xlim(1e1, 1e5)
+plt.xlim(1e1, 7e4)
 #plt.show()
 
 
-filename = savefolder + 'cl_ratio_zoomin_error_Oct10.pdf'
+filename = savefolder + 'cl_ratio_zoomin_error_Aug4_2020_cutoff_7e4.pdf'
 plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
 
 
